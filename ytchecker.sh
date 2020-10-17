@@ -2,10 +2,10 @@
 sleep 10
 while true
 do
-    frameA=$(tail /home/pi/ffmpeg.log -n 1 | sed -nr 's/.*frame=(.*)fps.*/\1/p')
+    frameA=$(tail /home/pi/roamerpi/ffmpeg.log -n 1 | sed -nr 's/.*frame=(.*)fps.*/\1/p')
     echo "$frameA"
     sleep 5
-    frameB=$(tail /home/pi/ffmpeg.log -n 1 | sed -nr 's/.*frame=(.*)fps.*/\1/p')
+    frameB=$(tail /home/pi/roamerpi/ffmpeg.log -n 1 | sed -nr 's/.*frame=(.*)fps.*/\1/p')
     echo "$frameB"
     if [ "$frameA" = "$frameB" ]
     then
@@ -16,7 +16,7 @@ do
 	printf "%s - Killed ffmpeg...\n" "$(date)" >> stream.log
         echo "Waiting 5 secs"
         sleep 5
-        bash /home/pi/ffmpeg.sh &
+        bash /home/pi/roamerpi/ffmpeg.sh &
         echo "started ffpmeg.."
 	printf "%s - Started ffmpeg..\n" "$(date)" >> stream.log
         echo "Waiting 15 secs"

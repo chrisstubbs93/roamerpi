@@ -1,7 +1,9 @@
 #!/bin/sh
+cd /home/pi/roamerpi
 sleep 10
 ./pull.sh
-./startmjpg.sh
-./ytchecker.sh
-./startmotors.sh
-./startgps.sh
+sleep 5
+./startmjpg.sh&
+./ytchecker.sh&
+./startmotors.sh&
+./startgps.sh&
