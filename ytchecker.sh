@@ -1,5 +1,4 @@
 #!/bin/sh
-
 sleep 10
 while true
 do
@@ -8,7 +7,6 @@ do
     sleep 5
     frameB=$(tail /home/pi/ffmpeg.log -n 1 | sed -nr 's/.*frame=(.*)fps.*/\1/p')
     echo "$frameB"
-
     if [ "$frameA" = "$frameB" ]
     then
         echo "Stream has hung"
@@ -26,6 +24,5 @@ do
     else 
         echo "Stream looks ok."
     fi
-
     sleep 2
 done

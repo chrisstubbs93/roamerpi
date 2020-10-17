@@ -1,5 +1,4 @@
 #!/bin/sh
-
 while true
 do
 	cd /home/pi/control
