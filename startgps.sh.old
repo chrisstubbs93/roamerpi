@@ -1,0 +1,8 @@
+#!/bin/sh
+
+while true
+do
+	cd /home/pi/gps
+	sudo python3 gps.py
+	sleep 10
+done
