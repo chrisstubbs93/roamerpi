@@ -1,0 +1,3 @@
+#!/bin/sh
+
+git pull https://abcd@github.com/chrisstubbs93/roamerpi.git
