@@ -161,7 +161,7 @@ app = web.Application()
 sio.attach(app)
 
 ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-ssl_context.load_cert_chain('/etc/letsencrypt/live/deliciousbeets.loseyourip.com/fullchain.pem', '/etc/letsencrypt/live/deliciousbeets.loseyourip.com/privkey.pem')
+ssl_context.load_cert_chain('/etc/letsencrypt/live/bigclamps.loseyourip.com/fullchain.pem', '/etc/letsencrypt/live/bigclamps.loseyourip.com/privkey.pem')
 
 @sio.on('control')
 async def handle_control(sid, control):
