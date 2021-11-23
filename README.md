@@ -1,5 +1,6 @@
 # RoamerPi
 It roams
+![meme](/docs/img/heroams.jpg)
 
-
-[Setup instructions](setup_instructions.md)
+# Setup
+[Setup instructions](/docs/setup_instructions.md)
