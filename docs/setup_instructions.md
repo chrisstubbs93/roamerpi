@@ -77,5 +77,18 @@ sudo chown pi -R /etc/letsencrypt/
 ```
 
 
+## disable bt for serial
+Edit the file /boot/config.txt and add the following line at the end of it.
+```sh
+dtoverlay=pi3-disable-bt
+```
+Disable HCIUart service and reboot
+```sh
+sudo systemctl disable hciuart.service
+sudo reboot
+```
+
+
+
 ## The list goes on...
 Disable IPV6?
