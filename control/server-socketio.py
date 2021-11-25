@@ -8,6 +8,7 @@ from functools import partial
 
 import serial
 import zlib
+import struct # for values to bytes
 
 #import socket as telemsocket
 import urllib.request
@@ -43,23 +44,36 @@ portbusy = False
 
 lasttime = 0
 
-ser = serial.Serial('/dev/serial0', 9600)  # open front serial port
-#ser.open()
-ser2 = serial.Serial('/dev/ttyUSB0', 9600)  # open rear serial port 
-#ser2.open()
+ser = serial.Serial('/dev/serial0', 115200, timeout=1)  # open front serial port
+ser2 = serial.Serial('/dev/ttyUSB0', 115200, timeout=1)  # open rear serial port 
 
 def sendcmd(steer,speed):
+	'''
+	Sends a bytearray for controlling the hoverboard
+
+	:param steer: -1000...1000
+	:param speed: -1000...1000
+	:returns: command bytes
+	'''
 	portbusy = True
-	steerB = (steer).to_bytes(2, byteorder='little', signed=True) #16 bits
-	speedB = (speed).to_bytes(2, byteorder='little', signed=True) #16 bits
-	crcB = zlib.crc32(steerB+speedB).to_bytes(4, byteorder='little') #32 bit CRC of byte-joined command
+	startB = bytes.fromhex('ABCD')[::-1] # lower byte first
+	#steerB = (steer).to_bytes(2, byteorder='little', signed=True) #16 bits
+	#speedB = (speed).to_bytes(2, byteorder='little', signed=True) #16 bits
+	steerB = struct.pack('h', steer)
+	speedB = struct.pack('h', speed)
+	#crcB = zlib.crc32(steerB+speedB).to_bytes(4, byteorder='little') #32 bit CRC of byte-joined command
+	crcB = bytes(a^b^c for (a, b, c) in zip(startBytes, steerBytes, speedBytes))
+
+	ser.write(startB)
 	ser.write(steerB)
 	ser.write(speedB)
 	ser.write(crcB)
 
+	ser2.write(startB)
 	ser2.write(steerB)
 	ser2.write(speedB)
 	ser2.write(crcB)
+
 	portbusy = False
 
 def rxcmd():
@@ -73,6 +87,7 @@ def rxcmd():
 		# global iVolt
 		# global iAmpL
 		# global iAmpR
+		'''
 		SerialFeedbackLen = 20
 		buf = bytearray()
 		if ser.inWaiting() >= SerialFeedbackLen:
@@ -102,6 +117,12 @@ def rxcmd():
 				#uploadTelemetry()
 			else:
 				print("!!-CHECKSUM FAIL-!!")
+		'''
+		feedback = uart.read_all()
+		#print(feedback)
+		if feedback:
+			cmd1, cmd2, speedR_meas, speedL_meas, batVoltage, boardTemp, cmdLed = struct.unpack('<hhhhhhH', feedback[2:16])
+			print(f'cmd1: {cmd1}, cmd2: {cmd2}, speedR_meas: {speedR_meas}, speedL_meas: {speedL_meas}, batVoltage: {batVoltage}, boardTemp: {boardTemp}, cmdLed: {cmdLed}')
 
 
 #define motor controls
