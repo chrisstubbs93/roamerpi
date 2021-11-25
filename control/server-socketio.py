@@ -39,6 +39,8 @@ import ssl
 # iAmpL = 0.0
 # iAmpR = 0.0
 
+
+
 global portbusy
 portbusy = False
 
@@ -127,46 +129,37 @@ def rxcmd():
 
 #define motor controls
 def stp():
-	#GPIO.output(pin_list, [0,0,0,0,0])
     sendcmd(0,0)
     print("stop")
 def fwd():
-        #GPIO.output(pin_list, [1,0,1,0,1])
-        sendcmd(0,250)
+        sendcmd(0,100)
         global lasttime
         lasttime = int(time.time())
 def bck():
-        #GPIO.output(pin_list, [1,1,0,1,0])
         sendcmd(0,-250)
         global lasttime
         lasttime = int(time.time())
 def right(): #on the spot turn right
-        #GPIO.output(pin_list, [1,0,1,1,0])
         sendcmd(350,0)
         global lasttime
         lasttime = int(time.time())
 def left(): #on the spot turn left
-        #GPIO.output(pin_list, [1,1,0,0,1])
         sendcmd(-350,0)
         global lasttime
         lasttime = int(time.time())
 def fr(): #forward right turn
-        #GPIO.output(pin_list, [1,0,1,0,0])
         sendcmd(350,200)
         global lasttime
         lasttime = int(time.time())
 def fl(): #forward left turn
-        #GPIO.output(pin_list, [1,0,0,0,1])
         sendcmd(-350,200)
         global lasttime
         lasttime = int(time.time())
 def br(): #reverse right turn
-        #GPIO.output(pin_list, [1,1,0,0,0])
         sendcmd(-350,-200)
         global lasttime
         lasttime = int(time.time())
 def bl(): #reverse left turn
-        #GPIO.output(pin_list, [1,0,0,1,0])
         sendcmd(350,-200)
         global lasttime
         lasttime = int(time.time())
