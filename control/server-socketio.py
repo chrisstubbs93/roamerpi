@@ -44,7 +44,7 @@ portbusy = False
 
 lasttime = 0
 
-ser = serial.Serial('/dev/serial0', 115200, timeout=1)  # open front serial port
+ser = serial.Serial('/dev/serial0', 115200, timeout=1)  # open front/main serial port
 ser2 = serial.Serial('/dev/ttyUSB0', 115200, timeout=1)  # open rear serial port 
 
 def sendcmd(steer,speed):
@@ -118,7 +118,7 @@ def rxcmd():
 			else:
 				print("!!-CHECKSUM FAIL-!!")
 		'''
-		feedback = uart.read_all()
+		feedback = ser.read_all()
 		#print(feedback)
 		if feedback:
 			cmd1, cmd2, speedR_meas, speedL_meas, batVoltage, boardTemp, cmdLed = struct.unpack('<hhhhhhH', feedback[2:16])
