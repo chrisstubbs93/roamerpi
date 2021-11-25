@@ -208,6 +208,12 @@ async def handle_control(sid, control):
         print("motors rev-right")
         br() #motors go rev-right for 0.5s
 
+@sio.on('analog')
+async def handle_control(sid, control):
+    print("ANALOG msg from: " , sid)
+    sendcmd(int(control.split(',')[0]),int(control.split(',')[1]))
+
+
 @sio.event
 async def connect(sid, environ):
     print('Client Connected: ', sid)
