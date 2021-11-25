@@ -132,35 +132,35 @@ def stp():
     sendcmd(0,0)
     print("stop")
 def fwd():
-        sendcmd(0,100)
+        sendcmd(0,50)
         global lasttime
         lasttime = int(time.time())
 def bck():
-        sendcmd(0,-250)
+        sendcmd(0,-50)
         global lasttime
         lasttime = int(time.time())
 def right(): #on the spot turn right
-        sendcmd(350,0)
+        sendcmd(50,0)
         global lasttime
         lasttime = int(time.time())
 def left(): #on the spot turn left
-        sendcmd(-350,0)
+        sendcmd(-50,0)
         global lasttime
         lasttime = int(time.time())
 def fr(): #forward right turn
-        sendcmd(350,200)
+        sendcmd(50,20)
         global lasttime
         lasttime = int(time.time())
 def fl(): #forward left turn
-        sendcmd(-350,200)
+        sendcmd(-50,20)
         global lasttime
         lasttime = int(time.time())
 def br(): #reverse right turn
-        sendcmd(-350,-200)
+        sendcmd(-50,-20)
         global lasttime
         lasttime = int(time.time())
 def bl(): #reverse left turn
-        sendcmd(350,-200)
+        sendcmd(50,-20)
         global lasttime
         lasttime = int(time.time())
 
