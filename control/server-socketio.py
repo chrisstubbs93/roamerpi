@@ -62,7 +62,7 @@ def sendcmd(steer,speed):
 	steerB = struct.pack('h', steer)
 	speedB = struct.pack('h', speed)
 	#crcB = zlib.crc32(steerB+speedB).to_bytes(4, byteorder='little') #32 bit CRC of byte-joined command
-	crcB = bytes(a^b^c for (a, b, c) in zip(startBytes, steerBytes, speedBytes))
+	crcB = bytes(a^b^c for (a, b, c) in zip(startB, steerB, speedB))
 
 	ser.write(startB)
 	ser.write(steerB)
