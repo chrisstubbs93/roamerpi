@@ -4,6 +4,6 @@ sleep 10
 ./pull.sh
 sleep 5
 #./startmjpg.sh&
-./ytchecker.sh&
+#./ytchecker.sh&
 ./startmotors.sh&
-./startgps.sh&
+#./startgps.sh&
