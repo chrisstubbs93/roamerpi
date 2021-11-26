@@ -164,6 +164,12 @@ def bl(): #reverse left turn
         global lasttime
         lasttime = int(time.time())
 
+
+def sendana(y,x): #reverse left turn
+        sendcmd(y,-x)
+        global lasttime
+        lasttime = int(time.time())
+
 ### SOCKETIO STUFF ###
 
 ## creates a new Async Socket IO Server
@@ -209,9 +215,9 @@ async def handle_control(sid, control):
         br() #motors go rev-right for 0.5s
 
 @sio.on('analog')
-async def handle_control(sid, control):
+async def handle_analog(sid, control):
     print("ANALOG msg from: " , sid)
-    sendcmd(int(control.split(',')[0]),int(control.split(',')[1]))
+    sendana(int(control.split(',')[0]),int(control.split(',')[1]))
 
 
 @sio.event
