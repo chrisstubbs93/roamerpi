@@ -165,8 +165,8 @@ def bl(): #reverse left turn
         lasttime = int(time.time())
 
 
-def sendana(y,x): #reverse left turn
-        sendcmd(y,-x)
+def sendana(x,y): #handle joystick command
+        sendcmd(x,y)
         global lasttime
         lasttime = int(time.time())
 
