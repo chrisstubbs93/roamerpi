@@ -43,7 +43,7 @@ import numpy
 
 #limits
 maxspeed = 100.0
-steerauth = 0.2
+steerauth = 0.4
 
 global portbusy
 portbusy = False
