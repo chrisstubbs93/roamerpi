@@ -17,6 +17,8 @@ from aiohttp import web
 import socketio
 import ssl
 
+import numpy
+
 #import requests
 #telemsocket.setdefaulttimeout(10)
 
@@ -39,7 +41,9 @@ import ssl
 # iAmpL = 0.0
 # iAmpR = 0.0
 
-
+#limits
+maxspeed = 100.0
+steerauth = 0.2
 
 global portbusy
 portbusy = False
@@ -57,6 +61,10 @@ def sendcmd(steer,speed):
 	:param speed: -1000...1000
 	:returns: command bytes
 	'''
+	steer = int(numpy.clip(100,-100,steer)*steerauth)
+	speed = int((numpy.clip(100,-100,speed)/100.0)*maxspeed)
+
+
 	portbusy = True
 	startB = bytes.fromhex('ABCD')[::-1] # lower byte first
 	#steerB = (steer).to_bytes(2, byteorder='little', signed=True) #16 bits
