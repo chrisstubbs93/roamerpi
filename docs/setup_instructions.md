@@ -87,8 +87,10 @@ Disable HCIUart service and reboot
 sudo systemctl disable hciuart.service
 sudo reboot
 ```
-
-
+I also disabled the bt service on the pi zero w but I don't think it was requred?
+```sh
+systemctl disable bluetooth.service
+```
 
 ## The list goes on...
 Disable IPV6?
