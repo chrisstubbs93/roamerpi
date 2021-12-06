@@ -88,16 +88,10 @@ def sendcmd(steer,speed):
 	#crcB = zlib.crc32(steerB+speedB).to_bytes(4, byteorder='little') #32 bit CRC of byte-joined command
 	crcB = bytes(a^b^c for (a, b, c) in zip(startB, steerB, speedB))
 
-	ser.write(startB)
-	ser.write(steerB)
-	ser.write(speedB)
-	ser.write(crcB)
+	ser.write(startB+steerB+speedB+crcB)
 
 	if fourwd:
-		ser2.write(startB)
-		ser2.write(steerB)
-		ser2.write(speedB)
-		ser2.write(crcB)
+		ser2.write(startB+steerB+speedB+crcB)
 
 	portbusy = False
 
