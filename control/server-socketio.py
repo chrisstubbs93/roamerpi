@@ -68,7 +68,7 @@ def sendcmd(steer,speed):
 		speed = int((numpy.clip(100,-100,speed)/100.0)*maxfwdspeed)
 	else:
 		speed = int((numpy.clip(100,-100,speed)/100.0)*maxrevspeed)
-	steer = int((numpy.clip(100,-100,steer)*steerauth*(1+((speedsteercomp-1)*speed/100)))
+	steer = int((numpy.clip(100,-100,steer)*steerauth*(1+((speedsteercomp-1)*speed/100))))
 
 
 	portbusy = True
