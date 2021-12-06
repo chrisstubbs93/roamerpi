@@ -142,7 +142,7 @@ def rxcmd():
 		if feedback:
 			cmd1, cmd2, speedR_meas, speedL_meas, batVoltage, boardTemp, cmdLed = struct.unpack('<hhhhhhH', feedback[2:16])
 			print(f'cmd1: {cmd1}, cmd2: {cmd2}, speedR_meas: {speedR_meas}, speedL_meas: {speedL_meas}, batVoltage: {batVoltage}, boardTemp: {boardTemp}, cmdLed: {cmdLed}')
-			sio.emit('my event', 'testing telem')
+			sio.emit('telemetry', 'testing telem')
 
 
 #define motor controls
