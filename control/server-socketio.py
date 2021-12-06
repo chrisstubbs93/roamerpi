@@ -45,7 +45,7 @@ import numpy
 maxfwdspeed = 150.0 #max fwd speed
 maxrevspeed = 100.0 #max reverse speed
 steerauth = 0.4 #adjust how much 100% steering actually steers
-speedsteercomp = 2.0 #more steering authority at speed. 2.0 = double steering authority at 100% speed
+speedsteercomp = 2.2 #more steering authority at speed. 2.0 = double steering authority at 100% speed
 
 global portbusy
 portbusy = False
