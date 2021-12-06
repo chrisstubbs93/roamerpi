@@ -42,8 +42,10 @@ import numpy
 # iAmpR = 0.0
 
 #limits
-maxspeed = 100.0
-steerauth = 0.4
+maxfwdspeed = 150.0 #max fwd speed
+maxrevspeed = 100.0 #max reverse speed
+steerauth = 0.4 #adjust how much 100% steering actually steers
+speedsteercomp = 2.0 #more steering authority at speed. 2.0 = double steering authority at 100% speed
 
 global portbusy
 portbusy = False
@@ -61,8 +63,12 @@ def sendcmd(steer,speed):
 	:param speed: -1000...1000
 	:returns: command bytes
 	'''
-	steer = int(numpy.clip(100,-100,steer)*steerauth)
-	speed = int((numpy.clip(100,-100,speed)/100.0)*maxspeed)
+	
+	if speed > 0:
+		speed = int((numpy.clip(100,-100,speed)/100.0)*maxfwdspeed)
+	else:
+		speed = int((numpy.clip(100,-100,speed)/100.0)*maxrevspeed)
+	steer = int((numpy.clip(100,-100,steer)*steerauth*(speedsteercomp*speed/100)))
 
 
 	portbusy = True
