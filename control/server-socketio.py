@@ -51,9 +51,17 @@ global portbusy
 portbusy = False
 
 lasttime = 0
+fourwd = False
 
-ser = serial.Serial('/dev/serial0', 115200, timeout=1)  # open front/main serial port
-ser2 = serial.Serial('/dev/ttyUSB0', 115200, timeout=1)  # open rear serial port 
+ser = serial.Serial('/dev/serial0', 115200, timeout=1)  # open main serial port
+try:
+	ser2 = serial.Serial('/dev/ttyUSB0', 115200, timeout=1)  # open secondary serial port 
+	fourwd = True
+	print("4WD detected")
+except:
+	fourwd = False
+	print("2WD only detected")
+
 
 def sendcmd(steer,speed):
 	'''
@@ -85,10 +93,11 @@ def sendcmd(steer,speed):
 	ser.write(speedB)
 	ser.write(crcB)
 
-	ser2.write(startB)
-	ser2.write(steerB)
-	ser2.write(speedB)
-	ser2.write(crcB)
+	if fourwd:
+		ser2.write(startB)
+		ser2.write(steerB)
+		ser2.write(speedB)
+		ser2.write(crcB)
 
 	portbusy = False
 
