@@ -194,7 +194,6 @@ async def handle_analog(sid, control):
 @sio.event
 async def connect(sid, environ):
     print('Client Connected: ', sid)
-    await sio.emit('telemetry', 'hello')
 
 @sio.event
 async def disconnect(sid):
@@ -218,7 +217,7 @@ def rxcmd():
 		if feedback:
 			cmd1, cmd2, speedR_meas, speedL_meas, batVoltage, boardTemp, cmdLed = struct.unpack('<hhhhhhH', feedback[2:16])
 			print(f'cmd1: {cmd1}, cmd2: {cmd2}, speedR_meas: {speedR_meas}, speedL_meas: {speedL_meas}, batVoltage: {batVoltage}, boardTemp: {boardTemp}, cmdLed: {cmdLed}')
-			sio.emit('telemetry', 'testing telem')
+			await sio.emit('telemetry', 'testing telem')
 
 
 #@periodic(interval=1)
