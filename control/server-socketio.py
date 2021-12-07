@@ -210,22 +210,27 @@ async def message(sid, data):
 
 
 
-async def rxcmd():
+def rxcmd():
 	if portbusy == False:
 		feedback = ser.read_all()
 		#print(feedback)
 		if feedback:
 			cmd1, cmd2, speedR_meas, speedL_meas, batVoltage, boardTemp, cmdLed = struct.unpack('<hhhhhhH', feedback[2:16])
 			print(f'cmd1: {cmd1}, cmd2: {cmd2}, speedR_meas: {speedR_meas}, speedL_meas: {speedL_meas}, batVoltage: {batVoltage}, boardTemp: {boardTemp}, cmdLed: {cmdLed}')
-			await sio.emit('telemetry', 'testing telem')
+			loop = asyncio.get_event_loop()
+			coroutine = sendtelem()
+			loop.run_until_complete(coroutine)
+
+async def sendtelem():
+	await sio.emit('telemetry', 'testing telem')		
 
 
 #@periodic(interval=1)
-async def task1():
+def task1():
 	try:
 		global lasttime
 		print("Lasttime:" + str(lasttime) + " Now:" + str(int(time.time())))
-		await rxcmd()
+		rxcmd()
 		if (int(time.time())>=int(lasttime+2)):
 			print("timeout")
 			stp()
