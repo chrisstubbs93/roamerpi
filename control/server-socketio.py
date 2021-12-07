@@ -194,6 +194,7 @@ async def handle_analog(sid, control):
 @sio.event
 async def connect(sid, environ):
     print('Client Connected: ', sid)
+    sio.emit('telemetry', 'hello')
 
 @sio.event
 async def disconnect(sid):
