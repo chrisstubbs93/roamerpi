@@ -210,7 +210,7 @@ async def message(sid, data):
 
 
 
-def rxcmd():
+async def rxcmd():
 	if portbusy == False:
 		feedback = ser.read_all()
 		#print(feedback)
@@ -336,19 +336,19 @@ class control(Thread):
 			print("closing interval (f)")
 			#wrapup()
 
-class motorTelemetry(Thread):
-	def __init__(self):
-		Thread.__init__(self)
-		self.daemon = True
-		self.start()
-	def run(self):
-		while True:
-			#time.sleep(1)
-			rxcmd()
+# class motorTelemetry(Thread):
+# 	def __init__(self):
+# 		Thread.__init__(self)
+# 		self.daemon = True
+# 		self.start()
+# 	def run(self):
+# 		while True:
+# 			#time.sleep(1)
+# 			rxcmd()
 
 
 control()
-motorTelemetry()
+#motorTelemetry()
 
 if __name__ == '__main__':
     web.run_app(app, port=9876, ssl_context=ssl_context)
