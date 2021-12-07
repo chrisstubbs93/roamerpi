@@ -230,7 +230,7 @@ def rxcmd():
 
 async def do_stuff_every_x_seconds(timeout):
 	while True:
-		await asyncio.sleep(timeout)
+		#await asyncio.sleep(timeout)
 		await sio.emit('telemetry', 'testing telem')
 		#print("sent the shit")
 
