@@ -227,6 +227,12 @@ def rxcmd():
 # async def sendtelem():
 # 	await sio.emit('telemetry', 'testing telem')		
 
+async def do_stuff_every_x_seconds(timeout):
+    while True:
+        await asyncio.sleep(timeout)
+		await sio.emit('telemetry', 'testing telem')
+		print("sent the shit")
+
 
 #@periodic(interval=1)
 def task1():
@@ -357,6 +363,8 @@ class control(Thread):
 
 control()
 #motorTelemetry()
+task = asyncio.create_task(do_stuff_every_x_seconds(1))
+
 
 if __name__ == '__main__':
     web.run_app(app, port=9876, ssl_context=ssl_context)
