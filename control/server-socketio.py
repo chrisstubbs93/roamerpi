@@ -234,8 +234,8 @@ def task1():
 		if (int(time.time())>=int(lasttime+2)):
 			print("timeout")
 			stp()
-	except e:
-		print("closing task1 " + e)
+	except BaseException as error:
+	    print('Closing task1 An exception occurred: {}'.format(error))
 
 #def taskstart():
 #    for t in tasks:
