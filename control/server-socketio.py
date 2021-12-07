@@ -221,11 +221,11 @@ async def rxcmd():
 
 
 #@periodic(interval=1)
-def task1():
+async def task1():
 	try:
 		global lasttime
 		print("Lasttime:" + str(lasttime) + " Now:" + str(int(time.time())))
-		rxcmd()
+		await rxcmd()
 		if (int(time.time())>=int(lasttime+2)):
 			print("timeout")
 			stp()
