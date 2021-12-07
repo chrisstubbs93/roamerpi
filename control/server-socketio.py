@@ -218,12 +218,14 @@ def rxcmd():
 		if feedback:
 			cmd1, cmd2, speedR_meas, speedL_meas, batVoltage, boardTemp, cmdLed = struct.unpack('<hhhhhhH', feedback[2:16])
 			print(f'cmd1: {cmd1}, cmd2: {cmd2}, speedR_meas: {speedR_meas}, speedL_meas: {speedL_meas}, batVoltage: {batVoltage}, boardTemp: {boardTemp}, cmdLed: {cmdLed}')
-			loop = asyncio.get_event_loop()
-			coroutine = sendtelem()
-			loop.run_until_complete(coroutine)
+			# loop = asyncio.get_event_loop()
+			# coroutine = sendtelem()
+			# loop.run_until_complete(coroutine)
+			await sio.emit('telemetry', 'testing telem')
+			print("sent the shit")
 
-async def sendtelem():
-	await sio.emit('telemetry', 'testing telem')		
+# async def sendtelem():
+# 	await sio.emit('telemetry', 'testing telem')		
 
 
 #@periodic(interval=1)
