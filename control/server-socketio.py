@@ -363,7 +363,7 @@ class control(Thread):
 
 control()
 #motorTelemetry()
-task = asyncio.create_task(do_stuff_every_x_seconds(1))
+task = asyncio.run(do_stuff_every_x_seconds(1))
 
 
 if __name__ == '__main__':
