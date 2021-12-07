@@ -221,7 +221,7 @@ def rxcmd():
 			# loop = asyncio.get_event_loop()
 			# coroutine = sendtelem()
 			# loop.run_until_complete(coroutine)
-			await sio.emit('telemetry', 'testing telem')
+			sio.emit('telemetry', 'testing telem')
 			print("sent the shit")
 
 # async def sendtelem():
