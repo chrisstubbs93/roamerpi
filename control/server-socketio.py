@@ -147,13 +147,34 @@ def sendana(x,y): #handle joystick command
 ## creates a new Async Socket IO Server
 sio = socketio.AsyncServer(cors_allowed_origins='*')
 ## Creates a new Aiohttp Web Application
-app = web.Application()
+#app = web.Application()
 # Binds our Socket.IO server to our Web App
 ## instance
-sio.attach(app)
+#sio.attach(app)
 
 ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
 ssl_context.load_cert_chain('/etc/letsencrypt/live/bigclamps.loseyourip.com/fullchain.pem', '/etc/letsencrypt/live/bigclamps.loseyourip.com/privkey.pem')
+
+async def init():
+	app = web.Application()
+	sio.attach(app)
+	return app
+
+def main():
+	logging.basicConfig(level=logging.DEBUG)
+	loop = asyncio.get_event_loop()
+	app = loop.run_until_complete(init())
+
+	loop.create_task(temeletry())
+
+	web.run_app(app, loop=loop) 
+
+async def temeletry():
+	print("TELEMETRY RUNNING")
+	while True:
+		print("sending telemetry")
+		await sio.emit("SHANK")
+		await asyncio.sleep(2)
 
 @sio.on('control')
 async def handle_control(sid, control):
@@ -361,7 +382,8 @@ control()
 
 
 if __name__ == '__main__':
-    web.run_app(app, port=9876, ssl_context=ssl_context)
+    #web.run_app(app, port=9876, ssl_context=ssl_context)
+    main()
 
 while True:
 	pass
