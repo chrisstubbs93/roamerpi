@@ -168,7 +168,7 @@ def main():
 	app = loop.run_until_complete(init())
 
 	loop.create_task(temeletry())
-
+	print("running app")
 	web.run_app(app, port=9876, ssl_context=ssl_context, loop=loop) 
 
 async def temeletry():
@@ -239,14 +239,14 @@ async def message(sid, data):
 
 
 
-def rxcmd():
-	if portbusy == False:
-		feedback = ser.read_all()
-		#print(feedback)
-		if feedback:
-			cmd1, cmd2, speedR_meas, speedL_meas, batVoltage, boardTemp, cmdLed = struct.unpack('<hhhhhhH', feedback[2:16])
-			print(f'cmd1: {cmd1}, cmd2: {cmd2}, speedR_meas: {speedR_meas}, speedL_meas: {speedL_meas}, batVoltage: {batVoltage}, boardTemp: {boardTemp}, cmdLed: {cmdLed}')
-			#asyncio.run(do_stuff_every_x_seconds(1)) #this kinda worked but made everything horribly slow
+# def rxcmd():
+# 	if portbusy == False:
+# 		feedback = ser.read_all()
+# 		#print(feedback)
+# 		if feedback:
+# 			cmd1, cmd2, speedR_meas, speedL_meas, batVoltage, boardTemp, cmdLed = struct.unpack('<hhhhhhH', feedback[2:16])
+# 			print(f'cmd1: {cmd1}, cmd2: {cmd2}, speedR_meas: {speedR_meas}, speedL_meas: {speedL_meas}, batVoltage: {batVoltage}, boardTemp: {boardTemp}, cmdLed: {cmdLed}')
+# 			#asyncio.run(do_stuff_every_x_seconds(1)) #this kinda worked but made everything horribly slow
 
 
 # async def do_stuff_every_x_seconds(timeout):  #this kinda worked but made everything horribly slow
@@ -261,7 +261,7 @@ def task1():
 	try:
 		global lasttime
 		print("Lasttime:" + str(lasttime) + " Now:" + str(int(time.time())))
-		rxcmd()
+		##rxcmd()
 		if (int(time.time())>=int(lasttime+2)):
 			print("timeout")
 			stp()
