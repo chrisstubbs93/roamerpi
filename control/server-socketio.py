@@ -169,7 +169,7 @@ def main():
 
 	loop.create_task(temeletry())
 
-	web.run_app(app, loop=loop) 
+	web.run_app(app, app, port=9876, ssl_context=ssl_context, loop=loop) 
 
 async def temeletry():
 	print("TELEMETRY RUNNING")
