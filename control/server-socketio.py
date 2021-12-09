@@ -10,7 +10,8 @@ steerauth = 0.4 #adjust how much 100% steering actually steers
 speedsteercomp = 2.2 #more steering authority at speed. 2.0 = double steering authority at 100% speed
 port1 = '/dev/serial0'
 port2 = '/dev/ttyUSB0'
-certlocation = '/etc/letsencrypt/live/bigclamps.loseyourip.com/fullchain.pem', '/etc/letsencrypt/live/bigclamps.loseyourip.com/privkey.pem'
+fullchainlocation = '/etc/letsencrypt/live/bigclamps.loseyourip.com/fullchain.pem'
+privkeylocation = '/etc/letsencrypt/live/bigclamps.loseyourip.com/privkey.pem'
 
 global portbusy
 portbusy = False
@@ -61,7 +62,7 @@ def stp():
 ## create a new Async Socket IO Server
 sio = socketio.AsyncServer(cors_allowed_origins='*')
 ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-ssl_context.load_cert_chain(certlocation)
+ssl_context.load_cert_chain(fullchainlocation, privkeylocation)
 
 async def init():
 	app = web.Application()
