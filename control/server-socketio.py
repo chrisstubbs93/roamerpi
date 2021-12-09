@@ -103,46 +103,46 @@ def sendcmd(steer,speed):
 
 #define motor controls
 def stp():
-    sendcmd(0,0)
-    print("stop")
+	sendcmd(0,0)
+	print("stop")
 def fwd():
-        sendcmd(0,50)
-        global lasttime
-        lasttime = int(time.time())
+		sendcmd(0,50)
+		global lasttime
+		lasttime = int(time.time())
 def bck():
-        sendcmd(0,-50)
-        global lasttime
-        lasttime = int(time.time())
+		sendcmd(0,-50)
+		global lasttime
+		lasttime = int(time.time())
 def right(): #on the spot turn right
-        sendcmd(50,0)
-        global lasttime
-        lasttime = int(time.time())
+		sendcmd(50,0)
+		global lasttime
+		lasttime = int(time.time())
 def left(): #on the spot turn left
-        sendcmd(-50,0)
-        global lasttime
-        lasttime = int(time.time())
+		sendcmd(-50,0)
+		global lasttime
+		lasttime = int(time.time())
 def fr(): #forward right turn
-        sendcmd(50,20)
-        global lasttime
-        lasttime = int(time.time())
+		sendcmd(50,20)
+		global lasttime
+		lasttime = int(time.time())
 def fl(): #forward left turn
-        sendcmd(-50,20)
-        global lasttime
-        lasttime = int(time.time())
+		sendcmd(-50,20)
+		global lasttime
+		lasttime = int(time.time())
 def br(): #reverse right turn
-        sendcmd(-50,-20)
-        global lasttime
-        lasttime = int(time.time())
+		sendcmd(-50,-20)
+		global lasttime
+		lasttime = int(time.time())
 def bl(): #reverse left turn
-        sendcmd(50,-20)
-        global lasttime
-        lasttime = int(time.time())
+		sendcmd(50,-20)
+		global lasttime
+		lasttime = int(time.time())
 
 
 def sendana(x,y): #handle joystick command
-        sendcmd(x,y)
-        global lasttime
-        lasttime = int(time.time())
+		sendcmd(x,y)
+		global lasttime
+		lasttime = int(time.time())
 
 ### SOCKETIO STUFF ###
 
@@ -172,63 +172,68 @@ def main():
 	web.run_app(app, port=9876, ssl_context=ssl_context, loop=loop) 
 
 async def temeletry():
-	print("TELEMETRY RUNNING")
 	while True:
 		print("sending telemetry")
-		await sio.emit('telemetry', 'testing telem')
-		await asyncio.sleep(2)
+		if portbusy == False:
+			feedback = ser.read_all()
+			#print(feedback)
+			if feedback:
+				cmd1, cmd2, speedR_meas, speedL_meas, batVoltage, boardTemp, cmdLed = struct.unpack('<hhhhhhH', feedback[2:16])
+				print(f'cmd1: {cmd1}, cmd2: {cmd2}, speedR_meas: {speedR_meas}, speedL_meas: {speedL_meas}, batVoltage: {batVoltage}, boardTemp: {boardTemp}, cmdLed: {cmdLed}')	
+				await sio.emit('telemetry', {"cmd1": cmd1, "cmd2": cmd2, "speedR_meas": speedR_meas, "speedL_meas": speedL_meas, "batVoltage": batVoltage, "boardTemp": boardTemp, "cmdLed": cmdLed})
+				await asyncio.sleep(1)
 
 @sio.on('control')
 async def handle_control(sid, control):
-    print("CTRL msg from: " , sid)
-    if control == "s":
-        print("motors stop")
-        stp() #motors STOP
-    if control == "f":
-        print("motors forward")
-        fwd() #motors go forward for 0.5s
-    if control == "b":
-        print("motors rev")
-        bck() #motors go rev for 0.5s
-    if control == "l":
-        print("motors left")
-        left() #motors go left for 0.5s
-    if control == "r":
-        print("motors right")
-        right() #motors go right for 0.5s
-    if control == "fl":
-        print("motors forward-left")
-        fl() #motors go forward-left for 0.5s
-    if control == "fr":
-        print("motors forward-right")
-        fr() #motors go forward-right for 0.5s
-    if control == "bl":
-        print("motors rev-left")
-        bl() #motors go rev-left for 0.5s
-    if control == "br":
-        print("motors rev-right")
-        br() #motors go rev-right for 0.5s
+	print("CTRL msg from: " , sid)
+	if control == "s":
+		print("motors stop")
+		stp() #motors STOP
+	if control == "f":
+		print("motors forward")
+		fwd() #motors go forward for 0.5s
+	if control == "b":
+		print("motors rev")
+		bck() #motors go rev for 0.5s
+	if control == "l":
+		print("motors left")
+		left() #motors go left for 0.5s
+	if control == "r":
+		print("motors right")
+		right() #motors go right for 0.5s
+	if control == "fl":
+		print("motors forward-left")
+		fl() #motors go forward-left for 0.5s
+	if control == "fr":
+		print("motors forward-right")
+		fr() #motors go forward-right for 0.5s
+	if control == "bl":
+		print("motors rev-left")
+		bl() #motors go rev-left for 0.5s
+	if control == "br":
+		print("motors rev-right")
+		br() #motors go rev-right for 0.5s
 
 @sio.on('analog')
 async def handle_analog(sid, control):
-    print("ANALOG msg from: " , sid)
-    sendana(int(control.split(',')[0]),int(control.split(',')[1]))
+	print("ANALOG msg from: " , sid)
+	sendana(int(control.split(',')[0]),int(control.split(',')[1]))
 
 
 @sio.event
 async def connect(sid, environ):
-    print('Client Connected: ', sid)
+	print('Client Connected: ', sid)
 
 @sio.event
 async def disconnect(sid):
-    print('Client Disconnected: ', sid)
-    print("motors stop")
-    stp()
+	print('Client Disconnected: ', sid)
+	print("motors stop")
+	stp()
 
 @sio.event
 async def message(sid, data):
-    print('message from ', sid)
-    print(data)
+	print('message from ', sid)
+	print(data)
 
 ### END SOCKETIO ###
 
@@ -261,7 +266,7 @@ def task1():
 			print("timeout")
 			stp()
 	except BaseException as error:
-	    print('Closing task1 An exception occurred: {}'.format(error))
+		print('Closing task1 An exception occurred: {}'.format(error))
 
 #def taskstart():
 #    for t in tasks:
@@ -281,44 +286,44 @@ def task1():
 
 class Interval(object):
 
-    def __init__(self, interval, function, args=[], kwargs={}):
-        """
-        Runs the function at a specified interval with given arguments.
-        """
-        self.interval = interval
-        self.function = partial(function, *args, **kwargs)
-        self.running  = False 
-        self._timer   = None 
+	def __init__(self, interval, function, args=[], kwargs={}):
+		"""
+		Runs the function at a specified interval with given arguments.
+		"""
+		self.interval = interval
+		self.function = partial(function, *args, **kwargs)
+		self.running  = False 
+		self._timer   = None 
 
-    def __call__(self):
-        """
-        Handler function for calling the partial and continuting. 
-        """
-        self.running = False  # mark not running
-        self.start()          # reset the timer for the next go 
-        self.function()       # call the partial function 
+	def __call__(self):
+		"""
+		Handler function for calling the partial and continuting. 
+		"""
+		self.running = False  # mark not running
+		self.start()          # reset the timer for the next go 
+		self.function()       # call the partial function 
 
-    def start(self):
-        """
-        Starts the interval and lets it run. 
-        """
-        if self.running:
-            # Don't start if we're running! 
-            return 
-            
-        # Create the timer object, start and set state. 
-        self._timer = Timer(self.interval, self)
-        self._timer.start() 
-        self.running = True
+	def start(self):
+		"""
+		Starts the interval and lets it run. 
+		"""
+		if self.running:
+			# Don't start if we're running! 
+			return 
+			
+		# Create the timer object, start and set state. 
+		self._timer = Timer(self.interval, self)
+		self._timer.start() 
+		self.running = True
 
-    def stop(self):
-        """
-        Cancel the interval (no more function calls).
-        """
-        if self._timer:
-            self._timer.cancel() 
-        self.running = False 
-        self._timer  = None
+	def stop(self):
+		"""
+		Cancel the interval (no more function calls).
+		"""
+		if self._timer:
+			self._timer.cancel() 
+		self.running = False 
+		self._timer  = None
 
 # try:
 # 	interval = Interval(0.5, task1,)
@@ -384,8 +389,8 @@ control()
 
 
 if __name__ == '__main__':
-    #web.run_app(app, port=9876, ssl_context=ssl_context)
-    main()
+	#web.run_app(app, port=9876, ssl_context=ssl_context)
+	main()
 
 while True:
 	pass
