@@ -181,7 +181,7 @@ async def temeletry():
 				print(f'cmd1: {cmd1}, cmd2: {cmd2}, speedR_meas: {speedR_meas}, speedL_meas: {speedL_meas}, batVoltage: {batVoltage}, boardTemp: {boardTemp}, cmdLed: {cmdLed}')	
 				await sio.emit('telemetry', {"cmd1": cmd1, "cmd2": cmd2, "speedR_meas": speedR_meas, "speedL_meas": speedL_meas, "batVoltage": batVoltage, "boardTemp": boardTemp, "cmdLed": cmdLed})
 				print("Telemetry Emitted")
-				await asyncio.sleep(1)
+			await asyncio.sleep(1)
 
 @sio.on('control')
 async def handle_control(sid, control):
