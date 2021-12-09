@@ -383,7 +383,7 @@ class control(Thread):
 # 			rxcmd()
 
 
-control()
+#control()
 #motorTelemetry()
 
 
