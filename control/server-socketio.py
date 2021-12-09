@@ -1,14 +1,16 @@
-import serial, struct, time # for hoverboard comms
+import serial, struct, time, numpy # for hoverboard comms
 import urllib.request
 from aiohttp import web
 import socketio, ssl, asyncio, logging
-import numpy
 
-#limits
+#limits & configuration
 maxfwdspeed = 150.0 #max fwd speed
 maxrevspeed = 100.0 #max reverse speed
 steerauth = 0.4 #adjust how much 100% steering actually steers
 speedsteercomp = 2.2 #more steering authority at speed. 2.0 = double steering authority at 100% speed
+port1 = '/dev/serial0'
+port2 = '/dev/ttyUSB0'
+certlocation = '/etc/letsencrypt/live/bigclamps.loseyourip.com/fullchain.pem', '/etc/letsencrypt/live/bigclamps.loseyourip.com/privkey.pem'
 
 global portbusy
 portbusy = False
@@ -16,9 +18,9 @@ portbusy = False
 lasttime = 0
 fourwd = False
 
-ser = serial.Serial('/dev/serial0', 115200, timeout=1)  # open main serial port
+ser = serial.Serial(port1, 115200, timeout=1)  # open main serial port
 try:
-	ser2 = serial.Serial('/dev/ttyUSB0', 115200, timeout=1)  # open secondary serial port 
+	ser2 = serial.Serial(port2, 115200, timeout=1)  # open secondary serial port 
 	fourwd = True
 	print("4WD detected")
 except:
@@ -47,51 +49,19 @@ def sendcmd(steer,speed):
 		ser2.write(startB+steerB+speedB+crcB)
 	portbusy = False
 
-#define motor controls
+
+def SendAndResetTimeout(steer,speed):
+	sendcmd(steer,speed)
+	global lasttime
+	lasttime = int(time.time())
+
 def stp():
 	sendcmd(0,0)
-def fwd():
-		sendcmd(0,50)
-		global lasttime
-		lasttime = int(time.time())
-def bck():
-		sendcmd(0,-50)
-		global lasttime
-		lasttime = int(time.time())
-def right(): #on the spot turn right
-		sendcmd(50,0)
-		global lasttime
-		lasttime = int(time.time())
-def left(): #on the spot turn left
-		sendcmd(-50,0)
-		global lasttime
-		lasttime = int(time.time())
-def fr(): #forward right turn
-		sendcmd(50,20)
-		global lasttime
-		lasttime = int(time.time())
-def fl(): #forward left turn
-		sendcmd(-50,20)
-		global lasttime
-		lasttime = int(time.time())
-def br(): #reverse right turn
-		sendcmd(-50,-20)
-		global lasttime
-		lasttime = int(time.time())
-def bl(): #reverse left turn
-		sendcmd(50,-20)
-		global lasttime
-		lasttime = int(time.time())
-
-def sendana(x,y): #handle joystick command
-		sendcmd(x,y)
-		global lasttime
-		lasttime = int(time.time())
 
 ## create a new Async Socket IO Server
 sio = socketio.AsyncServer(cors_allowed_origins='*')
 ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-ssl_context.load_cert_chain('/etc/letsencrypt/live/bigclamps.loseyourip.com/fullchain.pem', '/etc/letsencrypt/live/bigclamps.loseyourip.com/privkey.pem')
+ssl_context.load_cert_chain(certlocation)
 
 async def init():
 	app = web.Application()
@@ -138,34 +108,26 @@ async def handle_control(sid, control):
 		print("motors stop")
 		stp() #motors STOP
 	if control == "f":
-		print("motors forward")
-		fwd() #motors go forward for 0.5s
+		SendAndResetTimeout(0,50)
 	if control == "b":
-		print("motors rev")
-		bck() #motors go rev for 0.5s
+		SendAndResetTimeout(0,-50)
 	if control == "l":
-		print("motors left")
-		left() #motors go left for 0.5s
+		SendAndResetTimeout(-50,0)
 	if control == "r":
-		print("motors right")
-		right() #motors go right for 0.5s
+		SendAndResetTimeout(50,0)
 	if control == "fl":
-		print("motors forward-left")
-		fl() #motors go forward-left for 0.5s
+		SendAndResetTimeout(-50,20)
 	if control == "fr":
-		print("motors forward-right")
-		fr() #motors go forward-right for 0.5s
+		SendAndResetTimeout(50,20)
 	if control == "bl":
-		print("motors rev-left")
-		bl() #motors go rev-left for 0.5s
+		SendAndResetTimeout(50,-20)
 	if control == "br":
-		print("motors rev-right")
-		br() #motors go rev-right for 0.5s
+		SendAndResetTimeout(-50,-20)
 
 @sio.on('analog')
 async def handle_analog(sid, control):
 	print("ANALOG msg from: " , sid)
-	sendana(int(control.split(',')[0]),int(control.split(',')[1]))
+	SendAndResetTimeout(int(control.split(',')[0]),int(control.split(',')[1]))
 
 @sio.event
 async def connect(sid, environ):
