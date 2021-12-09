@@ -1,20 +1,8 @@
-import socket, hashlib, base64, threading
-import time
-from collections import namedtuple
-from functools import wraps
-from threading import Timer
-from threading import Thread
-from functools import partial
-import serial
-import struct # for values to bytes
+import serial, struct, time # for hoverboard comms
 import urllib.request
 from aiohttp import web
-import socketio
-import ssl
-import asyncio
+import socketio, ssl, asyncio, logging
 import numpy
-import logging
-
 
 #limits
 maxfwdspeed = 150.0 #max fwd speed
@@ -54,7 +42,6 @@ def sendcmd(steer,speed):
 	steerB = struct.pack('h', steer)
 	speedB = struct.pack('h', speed)
 	crcB = bytes(a^b^c for (a, b, c) in zip(startB, steerB, speedB))
-	print("sendingserial")
 	ser.write(startB+steerB+speedB+crcB)
 	if fourwd:
 		ser2.write(startB+steerB+speedB+crcB)
@@ -63,7 +50,6 @@ def sendcmd(steer,speed):
 #define motor controls
 def stp():
 	sendcmd(0,0)
-	print("stop")
 def fwd():
 		sendcmd(0,50)
 		global lasttime
@@ -97,7 +83,6 @@ def bl(): #reverse left turn
 		global lasttime
 		lasttime = int(time.time())
 
-
 def sendana(x,y): #handle joystick command
 		sendcmd(x,y)
 		global lasttime
@@ -126,6 +111,7 @@ def main():
 ###create asyncio background tasks here###
 async def temeletry():
 	while True:
+		await asyncio.sleep(1)
 		if portbusy == False:
 			feedback = ser.read_all()
 			#print(feedback)
@@ -133,21 +119,16 @@ async def temeletry():
 				cmd1, cmd2, speedR_meas, speedL_meas, batVoltage, boardTemp, cmdLed = struct.unpack('<hhhhhhH', feedback[2:16])
 				print(f'cmd1: {cmd1}, cmd2: {cmd2}, speedR_meas: {speedR_meas}, speedL_meas: {speedL_meas}, batVoltage: {batVoltage}, boardTemp: {boardTemp}, cmdLed: {cmdLed}')	
 				await sio.emit('telemetry', {"cmd1": cmd1, "cmd2": cmd2, "speedR_meas": speedR_meas, "speedL_meas": speedL_meas, "batVoltage": batVoltage, "boardTemp": boardTemp, "cmdLed": cmdLed})
-				print("Telemetry Emitted")
-			await asyncio.sleep(1)
 async def timeoutstop():
 	while True:
 		await asyncio.sleep(0.5)
 		try:
 			global lasttime
-			print("Lasttime:" + str(lasttime) + " Now:" + str(int(time.time())))
-			##rxcmd()
 			if (int(time.time())>=int(lasttime+2)):
-				print("timeout")
+				print("----Timeout!!---- Lasttime:" + str(lasttime) + " Now:" + str(int(time.time())) + "----Timeout!!----")
 				stp()
 		except BaseException as error:
-			print('Closing task1 An exception occurred: {}'.format(error))
-###create asyncio background tasks here###
+			print('An exception occurred in timeoutstop: {}'.format(error))
 
 #handle socket events
 @sio.on('control')
