@@ -175,7 +175,7 @@ async def temeletry():
 	print("TELEMETRY RUNNING")
 	while True:
 		print("sending telemetry")
-		await sio.emit("SHANK")
+		await sio.emit('telemetry', 'testing telem')
 		await asyncio.sleep(2)
 
 @sio.on('control')
