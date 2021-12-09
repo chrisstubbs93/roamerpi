@@ -90,7 +90,7 @@ def sendcmd(steer,speed):
 	speedB = struct.pack('h', speed)
 	#crcB = zlib.crc32(steerB+speedB).to_bytes(4, byteorder='little') #32 bit CRC of byte-joined command
 	crcB = bytes(a^b^c for (a, b, c) in zip(startB, steerB, speedB))
-
+	print("sendingserial")
 	ser.write(startB+steerB+speedB+crcB)
 
 	if fourwd:
