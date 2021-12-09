@@ -20,6 +20,8 @@ import asyncio
 
 import numpy
 
+import logging
+
 #import requests
 #telemsocket.setdefaulttimeout(10)
 
