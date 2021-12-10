@@ -116,7 +116,7 @@ async def sonar():
 			sonar_list = []
 			for pair in sonarSplit:
 				angle,distance = pair.split(":")
-				sonarToAdd = {"angle": angle, "distance": distance}
+				sonarToAdd = {"angle": int(angle), "distance": int(distance)}
 				sonar_list.append(sonarToAdd)
 
 			if sonar_list:
