@@ -87,8 +87,8 @@ async def temeletry():
 			feedback = ser.read_all()
 			#print(feedback)
 			if feedback:
-				if feedback[0:1]==bytes.fromhex('ABCD')[::-1]:
-					print("same")
+				#print("Anticipated " + struct.unpack('<H', bytes.fromhex('ABCD')[::-1]))
+				print("startbytes: " + struct.unpack('<h', feedback[0])+struct.unpack('<h', feedback[1]))
 				cmd1, cmd2, speedR_meas, speedL_meas, batVoltage, boardTemp, cmdLed = struct.unpack('<hhhhhhH', feedback[2:16])
 				print(f'cmd1: {cmd1}, cmd2: {cmd2}, speedR_meas: {speedR_meas}, speedL_meas: {speedL_meas}, batVoltage: {batVoltage}, boardTemp: {boardTemp}, cmdLed: {cmdLed}')	
 				await sio.emit('telemetry', {"cmd1": cmd1, "cmd2": cmd2, "speedR_meas": speedR_meas, "speedL_meas": speedL_meas, "batVoltage": batVoltage, "boardTemp": boardTemp, "cmdLed": cmdLed})
