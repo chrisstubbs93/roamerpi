@@ -112,7 +112,7 @@ async def sonar():
 		if rawSonarData:
 			sonarData = str(rawSonarData).replace("SONAR{", "").replace("}","")
 			sonarSplit = sonarData.split(",")
-
+			print(sonarData)
 			sonar_list = []
 			for pair in sonarSplit:
 				print(pair)
