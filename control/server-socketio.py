@@ -8,8 +8,9 @@ maxfwdspeed = 150.0 #max fwd speed
 maxrevspeed = 100.0 #max reverse speed
 steerauth = 0.4 #adjust how much 100% steering actually steers
 speedsteercomp = 2.2 #more steering authority at speed. 2.0 = double steering authority at 100% speed
-port1 = '/dev/serial0'
-port2 = '/dev/ttyUSB0'
+PortHoverboard1 = '/dev/serial0'
+PortHoverboard2 = '/dev/ttyUSB9999'
+PortSONAR = '/dev/ttyUSB0'
 fullchainlocation = '/etc/letsencrypt/live/bigclamps.loseyourip.com/fullchain.pem'
 privkeylocation = '/etc/letsencrypt/live/bigclamps.loseyourip.com/privkey.pem'
 
@@ -19,15 +20,25 @@ portbusy = False
 lasttime = 0
 fourwd = False
 
-ser = serial.Serial(port1, 115200, timeout=1)  # open main serial port
+#connect to hoverboard
+ser = serial.Serial(PortHoverboard1, 115200, timeout=1)  # open main serial port
 try:
-	ser2 = serial.Serial(port2, 115200, timeout=1)  # open secondary serial port 
+	
+	ser2 = serial.Serial(PortHoverboard2, 115200, timeout=1)  # open secondary serial port 
 	fourwd = True
 	print("4WD detected")
 except:
 	fourwd = False
 	print("2WD only detected")
 
+#connect to sonar
+try:
+	serSONAR = serial.Serial(PortSONAR, 115200, timeout=1)  # open secondary serial port 
+	SONARdetected = True
+	print("SONAR detected")
+except:
+	SONARdetected = False
+	print("SONAR not detected")
 
 def sendcmd(steer,speed):
 	'''
