@@ -87,7 +87,7 @@ async def temeletry():
 			feedback = ser.read_all()
 			#print(feedback)
 			if feedback:
-				#bytes.fromhex('ABCD')[::-1] # lower byte first
+				print("Anticipated" + bytes.fromhex('ABCD')[::-1].hex())
 				print("startbytes:"+feedback[0:1].hex())
 				cmd1, cmd2, speedR_meas, speedL_meas, batVoltage, boardTemp, cmdLed = struct.unpack('<hhhhhhH', feedback[2:16])
 				print(f'cmd1: {cmd1}, cmd2: {cmd2}, speedR_meas: {speedR_meas}, speedL_meas: {speedL_meas}, batVoltage: {batVoltage}, boardTemp: {boardTemp}, cmdLed: {cmdLed}')	
