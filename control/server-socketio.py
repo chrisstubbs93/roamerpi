@@ -110,7 +110,7 @@ async def sonar():
 		await asyncio.sleep(0.5)
 		rawSonarData = serSONAR.readline()
 		if rawSonarData:
-			result = re.search('SONAR{(.*)}', rawSonarData)
+			result = re.search('SONAR{(.*)}', str(rawSonarData))
 			sonarData = result.group(1)
 			sonarSplit = sonarData.split(",")
 
