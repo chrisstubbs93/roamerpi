@@ -1,7 +1,9 @@
+from contextlib import nullcontext
 import serial, struct, time, numpy # for hoverboard comms
 import urllib.request
 from aiohttp import web
 import socketio, ssl, asyncio, logging
+import re
 
 #limits & configuration
 maxfwdspeed = 150.0 #max fwd speed
@@ -87,6 +89,7 @@ def main():
 
 	loop.create_task(temeletry()) #add background task
 	loop.create_task(timeoutstop()) #add background task
+	loop.create_task(sonar())
 
 	web.run_app(app, port=9876, ssl_context=ssl_context, loop=loop) #run sio in the loop
 
@@ -101,6 +104,26 @@ async def temeletry():
 					cmd1, cmd2, speedR_meas, speedL_meas, batVoltage, boardTemp, cmdLed = struct.unpack('<hhhhhhH', feedback[2:16])
 					#print(f'cmd1: {cmd1}, cmd2: {cmd2}, speedR_meas: {speedR_meas}, speedL_meas: {speedL_meas}, batVoltage: {batVoltage}, boardTemp: {boardTemp}, cmdLed: {cmdLed}')	
 					await sio.emit('telemetry', {"cmd1": cmd1, "cmd2": cmd2, "speedR_meas": speedR_meas, "speedL_meas": speedL_meas, "batVoltage": batVoltage/100, "boardTemp": boardTemp/10, "cmdLed": cmdLed})
+
+async def sonar():
+	while True:
+		await asyncio.sleep(0.5)
+		rawSonarData = serSONAR.readline()
+		if rawSonarData:
+			result = re.search('SONAR{(.*)}', rawSonarData)
+			sonarData = result.group(1)
+			sonarSplit = sonarData.split(",")
+
+			sonar_list = []
+			for pair in sonarSplit:
+				angle,distance = pair.split(":")
+				sonarToAdd = {"angle": angle, "distance": distance}
+				sonar_list.append(sonarToAdd)
+
+			if sonar_list:
+				await sio.emit('sonar', sonar_list)
+
+
 async def timeoutstop():
 	while True:
 		await asyncio.sleep(0.5)
