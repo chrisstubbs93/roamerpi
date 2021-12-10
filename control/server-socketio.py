@@ -109,19 +109,20 @@ async def sonar():
 	while True:
 		await asyncio.sleep(0.5)
 		rawSonarData = serSONAR.readline()
-		if rawSonarData:
-			sonarData = str(rawSonarData).replace("SONAR{", "").replace("}","")
-			sonarSplit = sonarData.split(",")
-			print(sonarData)
-			sonar_list = []
-			for pair in sonarSplit:
-				print(pair)
-				angle,distance = pair.split(":")
-				sonarToAdd = {"angle": angle, "distance": distance}
-				sonar_list.append(sonarToAdd)
+		print(rawSonarData)
+		# if rawSonarData:
+		# 	sonarData = str(rawSonarData).replace("SONAR{", "").replace("}","")
+		# 	sonarSplit = sonarData.split(",")
+		# 	print(sonarData)
+		# 	sonar_list = []
+		# 	for pair in sonarSplit:
+		# 		print(pair)
+		# 		angle,distance = pair.split(":")
+		# 		sonarToAdd = {"angle": angle, "distance": distance}
+		# 		sonar_list.append(sonarToAdd)
 
-			if sonar_list:
-				await sio.emit('sonar', sonar_list)
+		# 	if sonar_list:
+		# 		await sio.emit('sonar', sonar_list)
 
 
 async def timeoutstop():
