@@ -96,7 +96,7 @@ async def timeoutstop():
 		try:
 			global lasttime
 			if (int(time.time())>=int(lasttime+2)):
-				print("----Timeout!!---- Lasttime:" + str(lasttime) + " Now:" + str(int(time.time())) + "----Timeout!!----")
+				print("----Control Timeout!!---- Lasttime:" + str(lasttime) + " Now:" + str(int(time.time())) + " ----Motors Stopped!!----")
 				stp()
 		except BaseException as error:
 			print('An exception occurred in timeoutstop: {}'.format(error))
