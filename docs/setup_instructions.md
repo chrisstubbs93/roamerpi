@@ -15,6 +15,13 @@ raspi-config
 - disable serial shell
 - join wifi
 
+## for lite OS only, install missing stuff:
+```sh
+sudo apt-get install git
+sudo apt install python3-pip
+sudo apt-get install python3-numpy
+```
+
 ## get code
 ```sh
 git clone https://creds@github.com/chrisstubbs93/roamerpi.git
