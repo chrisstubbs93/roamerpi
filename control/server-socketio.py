@@ -109,8 +109,9 @@ async def sonar():
 	while True:
 		await asyncio.sleep(0.5)
 		rawSonarData = serSONAR.readline()
-		if "SONAR" in rawSonarData:
-			sonarData = str(rawSonarData).replace("SONAR{", "").replace("}","").replace("\r\n", "")
+		strSonarData = str(rawSonarData)
+		if "SONAR" in strSonarData:
+			sonarData = strSonarData.replace("SONAR{", "").replace("}","").replace("\r\n", "")
 			sonarSplit = sonarData.split(",")
 			print(sonarData)
 			sonar_list = []
