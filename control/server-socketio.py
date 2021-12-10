@@ -111,7 +111,7 @@ async def sonar():
 		rawSonarData = serSONAR.readline()
 		strSonarData = str(rawSonarData)
 		if "SONAR" in strSonarData:
-			sonarData = strSonarData.replace("b'SONAR{", "").replace("}","").replace("\\r\\n", "")
+			sonarData = strSonarData.replace("b'SONAR{", "").replace("}","").replace("\\r\\n", "").replace("'", "")
 			sonarSplit = sonarData.split(",")
 			sonar_list = []
 			for pair in sonarSplit:
