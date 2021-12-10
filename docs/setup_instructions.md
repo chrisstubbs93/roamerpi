@@ -20,6 +20,7 @@ raspi-config
 sudo apt-get install git
 sudo apt install python3-pip
 sudo apt-get install python3-numpy
+python3 -m pip install pyserial
 ```
 
 ## get code
