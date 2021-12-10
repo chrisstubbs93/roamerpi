@@ -111,12 +111,10 @@ async def sonar():
 		rawSonarData = serSONAR.readline()
 		strSonarData = str(rawSonarData)
 		if "SONAR" in strSonarData:
-			sonarData = strSonarData.replace("SONAR{", "").replace("}","").replace("\r\n", "")
+			sonarData = strSonarData.replace("b'SONAR{", "").replace("}","").replace("\\r\\n", "")
 			sonarSplit = sonarData.split(",")
-			print(sonarData)
 			sonar_list = []
 			for pair in sonarSplit:
-				print(pair)
 				angle,distance = pair.split(":")
 				sonarToAdd = {"angle": angle, "distance": distance}
 				sonar_list.append(sonarToAdd)
