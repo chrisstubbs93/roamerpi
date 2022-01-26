@@ -12,7 +12,8 @@ steerauth = 0.4 #adjust how much 100% steering actually steers
 speedsteercomp = 2.2 #more steering authority at speed. 2.0 = double steering authority at 100% speed
 PortHoverboard1 = '/dev/serial0'
 PortHoverboard2 = '/dev/ttyUSB9999'
-PortSONAR = '/dev/ttyUSB0'
+PortSteering = '/dev/ttyUSB0'
+PortSONAR = '/dev/ttyUSB9999'
 fullchainlocation = '/etc/letsencrypt/live/bigclamps.loseyourip.com/fullchain.pem'
 privkeylocation = '/etc/letsencrypt/live/bigclamps.loseyourip.com/privkey.pem'
 
@@ -35,14 +36,25 @@ except:
 
 #connect to sonar
 try:
-	serSONAR = serial.Serial(PortSONAR, 115200, timeout=1)  # open secondary serial port 
+	serSONAR = serial.Serial(PortSONAR, 115200, timeout=1)  # open sonar serial port 
 	SONARdetected = True
 	print("SONAR detected")
 except:
 	SONARdetected = False
 	print("SONAR not detected")
 
-def sendcmd(steer,speed):
+#connect to steering
+try:
+	serSteering = serial.Serial(PortSteering, 115200, timeout=1)  # open steering serial port 
+	Steeringdetected = True
+	print("Steering detected")
+except:
+	Steeringdetected = False
+	print("Steering not detected")
+
+##############################################
+
+def sendcmd(steerin,speed):
 	'''
 	Sends a bytearray for controlling the hoverboard
 	:param steer: -1000...1000	:param speed: -1000...1000	:
@@ -51,7 +63,8 @@ def sendcmd(steer,speed):
 		speed = int((numpy.clip(100,-100,speed)/100.0)*maxfwdspeed)
 	else:
 		speed = int((numpy.clip(100,-100,speed)/100.0)*maxrevspeed)
-	steer = int((numpy.clip(100,-100,steer)*steerauth*(1+((speedsteercomp-1)*abs(speed)/100))))
+	#steer = int((numpy.clip(100,-100,steerin)*steerauth*(1+((speedsteercomp-1)*abs(speed)/100)))) #disable diff steering
+	steer = 0
 
 	portbusy = True
 	startB = bytes.fromhex('ABCD')[::-1] # lower byte first
@@ -61,6 +74,9 @@ def sendcmd(steer,speed):
 	ser.write(startB+steerB+speedB+crcB)
 	if fourwd:
 		ser2.write(startB+steerB+speedB+crcB)
+	#do the arduino steering
+	if Steeringdetected:
+		serSteering.write(str(numpy.clip(100,-100,steerin))+"\n")
 	portbusy = False
 
 
