@@ -1,6 +1,6 @@
 # RoamerPi
 
-- ✨low qualtiy ✨setup instructions
+- ✨low quality ✨setup instructions
 
 
 ## raspi-config
@@ -99,6 +99,27 @@ I also disabled the bt service on the pi zero w but I don't think it was requred
 ```sh
 systemctl disable bluetooth.service
 ```
+
+## Neopixel setup shiz
+At this time, Blinka requires Python version 3.7 or later, which means you will need to at least be running Raspberry Pi OS Bullseye.
+```
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt-get install python3-pip
+sudo pip3 install --upgrade setuptools
+
+sudo pip3 install --upgrade adafruit-python-shell
+wget https://raw.githubusercontent.com/adafruit/Raspberry-Pi-Installer-Scripts/master/raspi-blinka.py
+sudo python3 raspi-blinka.py
+
+sudo pip3 install rpi_ws281x adafruit-circuitpython-neopixel
+sudo python3 -m pip install --force-reinstall adafruit-blinka
+```
+To stop audio PWM clashing with neopixel create a file /etc/modprobe.d/snd-blacklist.conf with:
+```
+blacklist snd_bcm2835
+```
+
 
 ## The list goes on...
 Disable IPV6?
