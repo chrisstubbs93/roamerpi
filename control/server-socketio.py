@@ -70,10 +70,12 @@ def sendcmd(steerin,speed):
 	startB = bytes.fromhex('ABCD')[::-1] # lower byte first
 	steerB = struct.pack('h', steer)
 	speedB = struct.pack('h', speed)
-	crcB = bytes(a^b^c for (a, b, c) in zip(startB, steerB, speedB))
-	ser.write(startB+steerB+speedB+crcB)
+	brakeB = struct.pack('h', 0) #don't bother with braking in speed mode
+	driveModeB = struct.pack('h', 2) #2=speed, 3=torque
+	crcB = bytes(a^b^c^d^e for (a, b, c, d, e) in zip(startB, steerB, speedB, brakeB, driveModeB))
+	ser.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
 	if fourwd:
-		ser2.write(startB+steerB+speedB+crcB)
+		ser2.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
 	#do the arduino steering
 	if Steeringdetected:
 		serSteering.write((str(numpy.clip(100,-100,steerin))+"\n").encode('utf_8'))
