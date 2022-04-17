@@ -88,7 +88,7 @@ def sendcmd(steerin,speed):
 		ScrcB = bytes(a^b for (a, b) in zip(SstartB, SsteerB))
 		serSteering.write(SstartB+SsteerB+ScrcB)
 
-		print("steer sent " + numpy.clip(100,-100,steerin))
+		print("steer sent " + str(numpy.clip(100,-100,steerin)))
 
 		#x=serSteering.readline() #debug
 		#print(x) #debug
