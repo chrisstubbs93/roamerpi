@@ -84,7 +84,7 @@ def sendcmd(steerin,speed):
 		#serSteering.write((str(numpy.clip(100,-100,steerin))+"\n").encode('utf_8')) #old mode
 
 		SstartB = bytes.fromhex('ABCD')[::-1] # lower byte first
-		SsteerB = struct.pack('h', (str(numpy.clip(100,-100,steerin))+"\n").encode('utf_8'))
+		SsteerB = struct.pack('h', (numpy.clip(100,-100,steerin)+"\n").encode('utf_8'))
 		ScrcB = bytes(a^b for (a, b) in zip(SstartB, SsteerB))
 		serSteering.write(SstartB+SsteerB+ScrcB)
 
