@@ -11,8 +11,8 @@ maxrevspeed = 100.0 #max reverse speed
 steerauth = 0.4 #adjust how much 100% steering actually steers
 speedsteercomp = 2.2 #more steering authority at speed. 2.0 = double steering authority at 100% speed
 PortHoverboard1 = '/dev/serial0'
-PortHoverboard2 = '/dev/ttyUSB9999'
-PortSteering = '/dev/ttyUSB0'
+PortHoverboard2 = '/dev/ttyUSB0'
+PortSteering = '/dev/ttyUSB1'
 PortSONAR = '/dev/ttyUSB9999'
 fullchainlocation = '/etc/letsencrypt/live/bigclamps.loseyourip.com/fullchain.pem'
 privkeylocation = '/etc/letsencrypt/live/bigclamps.loseyourip.com/privkey.pem'
