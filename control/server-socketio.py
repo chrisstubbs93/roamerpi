@@ -4,7 +4,6 @@ import urllib.request
 from aiohttp import web
 import socketio, ssl, asyncio, logging
 import re
-import crc8
 
 #limits & configuration
 maxfwdspeed = 50.0 #max fwd speed
@@ -82,14 +81,7 @@ def sendcmd(steerin,speed):
 	#do the arduino steering
 	if Steeringdetected:
 		steerin = steerin * -1 #because it's backwards
-		steeringcommand = numpy.clip(100,-100,steerin)
-		print("steeringcommand " + str(steeringcommand))
-		hash = crc8.crc8()
-		hash.update(steeringcommand)
-		print("hash" + str(hash.digest()))
-		serSteering.write(str(steeringcommand).encode('utf_8')) #old mode
-		serSteering.write(str(hash.digest()).encode('utf_8')) #old mode
-		serSteering.write(("\n").encode('utf_8')) #old mode
+		serSteering.write((str(numpy.clip(100,-100,steerin))+"\n").encode('utf_8')) #old mode
 	portbusy = False
 
 
