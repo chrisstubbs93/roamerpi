@@ -78,7 +78,7 @@ def sendcmd(steerin,speed):
 		ser2.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
 	#do the arduino steering
 	if Steeringdetected:
-		steerin = 0 - steerin + 100 #convert 0-100 to 100-0 because it's  backwards
+		steerin = steerin * -1 #because it's backwards
 		serSteering.write((str(numpy.clip(100,-100,steerin))+"\n").encode('utf_8'))
 	portbusy = False
 
