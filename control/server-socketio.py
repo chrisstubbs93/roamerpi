@@ -87,9 +87,9 @@ def sendcmd(steerin,speed):
 		SsteerB = struct.pack('h', (str(numpy.clip(100,-100,steerin))+"\n").encode('utf_8'))
 		ScrcB = bytes(a^b for (a, b) in zip(SstartB, SsteerB))
 		serSteering.write(SstartB+SsteerB+ScrcB)
-
+		
 		x=serSteering.readline() #debug
-        print x #debug
+		print x #debug
 	portbusy = False
 
 
