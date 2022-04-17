@@ -6,7 +6,7 @@ import socketio, ssl, asyncio, logging
 import re
 
 #limits & configuration
-maxfwdspeed = 150.0 #max fwd speed
+maxfwdspeed = 100.0 #max fwd speed
 maxrevspeed = 100.0 #max reverse speed
 steerauth = 0.4 #adjust how much 100% steering actually steers
 speedsteercomp = 2.2 #more steering authority at speed. 2.0 = double steering authority at 100% speed
@@ -64,7 +64,7 @@ def sendcmd(steerin,speed):
 	else:
 		speed = int((numpy.clip(100,-100,speed)/100.0)*maxrevspeed)
 	#steer = int((numpy.clip(100,-100,steerin)*steerauth*(1+((speedsteercomp-1)*abs(speed)/100)))) #disable diff steering
-	steer = 0
+	steer = 0 #don't skid steer using the hoverboards
 
 	portbusy = True
 	startB = bytes.fromhex('ABCD')[::-1] # lower byte first
@@ -78,6 +78,7 @@ def sendcmd(steerin,speed):
 		ser2.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
 	#do the arduino steering
 	if Steeringdetected:
+		steerin = 0 - steerin + 100 #convert 0-100 to 100-0 because it's  backwards
 		serSteering.write((str(numpy.clip(100,-100,steerin))+"\n").encode('utf_8'))
 	portbusy = False
 
