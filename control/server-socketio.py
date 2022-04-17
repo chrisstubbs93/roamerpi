@@ -6,10 +6,10 @@ import socketio, ssl, asyncio, logging
 import re
 
 #limits & configuration
-maxfwdspeed = 100.0 #max fwd speed
-maxrevspeed = 100.0 #max reverse speed
-steerauth = 0.4 #adjust how much 100% steering actually steers
-speedsteercomp = 2.2 #more steering authority at speed. 2.0 = double steering authority at 100% speed
+maxfwdspeed = 50.0 #max fwd speed
+maxrevspeed = 25.0 #max reverse speed
+steerauth = 0.4 #adjust how much 100% steering actually steers (don't do nuffink)
+speedsteercomp = 2.2 #more steering authority at speed. 2.0 = double steering authority at 100% speed (don't do nuffink)
 PortHoverboard1 = '/dev/serial0'
 PortHoverboard2 = '/dev/ttyUSB0'
 PortSteering = '/dev/ttyUSB1'
