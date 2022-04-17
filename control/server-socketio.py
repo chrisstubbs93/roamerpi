@@ -76,10 +76,20 @@ def sendcmd(steerin,speed):
 	ser.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
 	if fourwd:
 		ser2.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
+
+
 	#do the arduino steering
 	if Steeringdetected:
 		steerin = steerin * -1 #because it's backwards
-		serSteering.write((str(numpy.clip(100,-100,steerin))+"\n").encode('utf_8'))
+		#serSteering.write((str(numpy.clip(100,-100,steerin))+"\n").encode('utf_8')) #old mode
+
+		SstartB = bytes.fromhex('ABCD')[::-1] # lower byte first
+		SsteerB = struct.pack('h', (str(numpy.clip(100,-100,steerin))+"\n").encode('utf_8'))
+		ScrcB = bytes(a^b for (a, b) in zip(SstartB, SsteerB))
+		serSteering.write(SstartB+SsteerB+ScrcB)
+
+		x=serSteering.readline() #debug
+        print x #debug
 	portbusy = False
 
 
