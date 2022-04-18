@@ -203,7 +203,7 @@ async def bodyControl():
 		await asyncio.sleep(0.5)
 		if NavsparkDetected:
 			rawNavSparkData = serNavspark.readline()
-			bodyControlData = str(rawNavSparkData)
+			bodyControlData = str(rawNavSparkData).replace("b'", "").replace("\\r\\n", "").replace("$", "")[:-1]
 
 			if "$SONAR" in bodyControlData: # SONAR data			
 				await handleSonar(bodyControlData)
@@ -333,8 +333,6 @@ async def handleBump(bumpString):
 		print("Checksums are %s and %s" % (cksum,calc_cksum))
 
 def nmeaChecksum(sentence):
-
-	sentence = sentence.replace("b'", "").replace("\\r\\n", "").replace("$", "")[:-1]
 	if re.search("\n$", sentence):
 		sentence = sentence[:-1]
 
