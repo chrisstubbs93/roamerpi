@@ -84,9 +84,7 @@ except:
 try:
 	serNavspark = serial.Serial(PortNavspark, 115200, timeout=1)  # open navspark serial port 
 	time.sleep(3)
-	print(str(serNavspark.readline())[0])
-	print(str(serNavspark.readline()))
-	if "$" in str(serNavspark.readline())[0]:
+	if "$" in str(serNavspark.readline()).replace("b'", "")[0]:
 		NavsparkDetected = True
 		print("NavSpark detected")
 except:
@@ -285,7 +283,7 @@ def handleGps(nmeaGpsString):
 async def handleSonar(sonarString):
 	data,cksum,calc_cksum = nmeaChecksum(sonarString)
 	if cksum == calc_cksum:
-		sonarSplit = data.replace("$SONAR,").split(",")
+		sonarSplit = data.replace("b'$SONAR,").split(",")
 		sonar_list = []
 		for pair in sonarSplit:
 			angle,distance = pair.split(":")
