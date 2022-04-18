@@ -12,7 +12,7 @@ from shapely.geometry import shape, Point
 
 socket.setdefaulttimeout(10)
 my_gps = MicropyGPS()
-lasttime = 0
+lastgpstime = 0
 
 #limits & configuration
 maxfwdspeed = 50.0 #max fwd speed
@@ -219,8 +219,8 @@ def handleGps(nmeaGpsString):
 	if cksum == calc_cksum:
 		for x in nmeaGpsString:
 			my_gps.update(x)
-		if (lasttime + 30) < time.time():
-			lasttime = time.time()
+		if (lastgpstime + 30) < time.time():
+			lastgpstime = time.time()
 			#process the NMEA coords to decimal
 			lat = round(my_gps.latitude[0] + (my_gps.latitude[1]/60),8)
 			lng = round(my_gps.longitude[0] + (my_gps.longitude[1]/60),8)
