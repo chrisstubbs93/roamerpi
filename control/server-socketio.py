@@ -201,17 +201,18 @@ async def telemetry():
 async def bodyControl():
 	while True:
 		await asyncio.sleep(0.5)
-		rawNavSparkData = serNavspark.readline()
-		bodyControlData = str(rawNavSparkData)
+		if NavsparkDetected:
+			rawNavSparkData = serNavspark.readline()
+			bodyControlData = str(rawNavSparkData)
 
-		if "$SONAR" in bodyControlData: # SONAR data			
-			handleSonar()
+			if "$SONAR" in bodyControlData: # SONAR data			
+				handleSonar()
 
-		if "$BUMP" in bodyControlData: # Bumpstop data
-			handleBump()
+			if "$BUMP" in bodyControlData: # Bumpstop data
+				handleBump()
 
-		if "$BUMP" not in bodyControlData and "$SONAR" not in bodyControlData: # neither Bump or SONAR so we'll treat this as GPS data
-			handleGps(bodyControlData)
+			if "$BUMP" not in bodyControlData and "$SONAR" not in bodyControlData: # neither Bump or SONAR so we'll treat this as GPS data
+				handleGps(bodyControlData)
 
 def handleGps(nmeaGpsString):	
 	data,cksum,calc_cksum = nmeaChecksum(nmeaGpsString)
