@@ -205,13 +205,13 @@ async def bodyControl():
 			rawNavSparkData = serNavspark.readline()
 			bodyControlData = str(rawNavSparkData).replace("b'", "").replace("\\r\\n", "").replace("$", "")[:-1]
 
-			if "$SONAR" in bodyControlData: # SONAR data			
+			if "SONAR" in bodyControlData: # SONAR data			
 				await handleSonar(bodyControlData)
 
-			if "$BUMP" in bodyControlData: # Bumpstop data
+			if "BUMP" in bodyControlData: # Bumpstop data
 				await handleBump(bodyControlData)
 
-			if "$BUMP" not in bodyControlData and "$SONAR" not in bodyControlData: # neither Bump or SONAR so we'll treat this as GPS data
+			if "BUMP" not in bodyControlData and "SONAR" not in bodyControlData: # neither Bump or SONAR so we'll treat this as GPS data
 				handleGps(bodyControlData)
 
 def handleGps(nmeaGpsString):	
