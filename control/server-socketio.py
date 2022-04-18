@@ -84,6 +84,8 @@ except:
 try:
 	serNavspark = serial.Serial(PortNavspark, 115200, timeout=1)  # open navspark serial port 
 	time.sleep(3)
+	print(str(serNavspark.readline())[0])
+	print(str(serNavspark.readline()))
 	if "$" in str(serNavspark.readline())[0]:
 		NavsparkDetected = True
 		print("NavSpark detected")
