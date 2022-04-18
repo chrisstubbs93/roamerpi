@@ -11,9 +11,9 @@ import json
 from shapely.geometry import shape, Point
 
 socket.setdefaulttimeout(10)
-my_gps = MicropyGPS()
 global lastgpstime
 lastgpstime = 0
+my_gps = MicropyGPS()
 
 #limits & configuration
 maxfwdspeed = 50.0 #max fwd speed
@@ -175,6 +175,8 @@ def main():
 	loop = asyncio.get_event_loop()
 	app = loop.run_until_complete(init()) #init sio in the loop
 
+	lastgpstime = 0
+	
 	loop.create_task(telemetry()) #add background task
 	loop.create_task(timeoutstop()) #add background task
 	loop.create_task(bodyControl())
