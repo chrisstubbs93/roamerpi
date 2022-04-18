@@ -284,7 +284,7 @@ def handleGps(nmeaGpsString):
 async def handleSonar(sonarString):
 	data,cksum,calc_cksum = nmeaChecksum(sonarString)
 	if cksum == calc_cksum:
-		sonarSplit = data.replace("$SONAR,").split(",")
+		sonarSplit = data.replace("SONAR,", "").split(",")
 		sonar_list = []
 		for pair in sonarSplit:
 			angle,distance = pair.split(":")
