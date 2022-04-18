@@ -206,10 +206,10 @@ async def bodyControl():
 			bodyControlData = str(rawNavSparkData)
 
 			if "$SONAR" in bodyControlData: # SONAR data			
-				handleSonar()
+				handleSonar(bodyControlData)
 
 			if "$BUMP" in bodyControlData: # Bumpstop data
-				handleBump()
+				handleBump(bodyControlData)
 
 			if "$BUMP" not in bodyControlData and "$SONAR" not in bodyControlData: # neither Bump or SONAR so we'll treat this as GPS data
 				handleGps(bodyControlData)
