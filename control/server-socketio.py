@@ -203,7 +203,7 @@ async def bodyControl():
 		await asyncio.sleep(0.5)
 		if NavsparkDetected:
 			rawNavSparkData = serNavspark.readline()
-			bodyControlData = str(rawNavSparkData).replace("b'", "").replace("\\r\\n", "").replace("$", "")[:-1]
+			bodyControlData = (str(rawNavSparkData).replace("b'", "").replace("\\r\\n", "").replace("$", ""))[:-1]
 
 			if "SONAR" in bodyControlData: # SONAR data			
 				await handleSonar(bodyControlData)
@@ -311,7 +311,7 @@ async def handleSonar(sonarString):
 async def handleBump(bumpString):
 	data,cksum,calc_cksum = nmeaChecksum(bumpString)
 	if cksum == calc_cksum:
-		bumpSplit = bumpString.split(",")
+		bumpSplit = data.split(",")
 		angle = int(bumpSplit[1])
 		state = int(bumpSplit[2])
 		bumpToSend = {"angle": angle, "state": state}
