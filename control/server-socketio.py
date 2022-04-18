@@ -11,7 +11,6 @@ import json
 from shapely.geometry import shape, Point
 
 socket.setdefaulttimeout(10)
-global lastgpstime
 lastgpstime = 0
 my_gps = MicropyGPS()
 
@@ -175,8 +174,6 @@ def main():
 	loop = asyncio.get_event_loop()
 	app = loop.run_until_complete(init()) #init sio in the loop
 
-	lastgpstime = 0
-	
 	loop.create_task(telemetry()) #add background task
 	loop.create_task(timeoutstop()) #add background task
 	loop.create_task(bodyControl())
@@ -218,6 +215,7 @@ async def bodyControl():
 				handleGps(bodyControlData)
 
 def handleGps(nmeaGpsString):	
+	global lastgpstime
 	data,cksum,calc_cksum = nmeaChecksum(nmeaGpsString)
 	if cksum == calc_cksum:
 		for x in nmeaGpsString:
