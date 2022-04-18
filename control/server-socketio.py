@@ -4,6 +4,15 @@ import urllib.request
 from aiohttp import web
 import socketio, ssl, asyncio, logging
 import re
+import socket
+from micropyGPS import MicropyGPS
+import requests
+import json
+from shapely.geometry import shape, Point
+
+socket.setdefaulttimeout(10)
+my_gps = MicropyGPS()
+lasttime = 0
 
 #limits & configuration
 maxfwdspeed = 50.0 #max fwd speed
@@ -13,7 +22,7 @@ speedsteercomp = 2.2 #more steering authority at speed. 2.0 = double steering au
 PortHoverboard1 = '/dev/serial0'
 PortHoverboard2 = '/dev/ttyUSB0'
 PortSteering = '/dev/ttyUSB1'
-PortSONAR = '/dev/ttyUSB9999'
+PortNavspark = '/dev/ttyUSB9999'
 fullchainlocation = '/etc/letsencrypt/live/bigclamps.loseyourip.com/fullchain.pem'
 privkeylocation = '/etc/letsencrypt/live/bigclamps.loseyourip.com/privkey.pem'
 
@@ -23,25 +32,64 @@ portbusy = False
 lasttime = 0
 fourwd = False
 
+#global motor halt vars for GPS/SONAR/BUMP
+global haltMotors
+haltMotors = False
+
+global haltMotorOverride
+haltMotorOverride = False
+
+global frontBumped
+frontBumped = False
+
+global rearBumped
+rearBumped = False
+
+global frontProxBreach
+frontProxBreach = False
+
+global rearProxBreach
+rearProxBreach = False
+
+#config for SONAR, GPS and Bump stops
+haltMotorsOnBump = True
+haltMotorsOnProxBreach = True
+haltMotorsOnGeofenceBreach = True
+
+#distance thresholds for SONAR to halt motors
+frontThreshold = 15
+rearThreshold = 15
+leftThreshold = 15
+rightThreshold = 15
+
+#load the JSON geofencing data
+with open('geo.json') as f:
+	js = json.load(f)
+
 #connect to hoverboard
 ser = serial.Serial(PortHoverboard1, 115200, timeout=1)  # open main serial port
-try:
-	
+try:	
 	ser2 = serial.Serial(PortHoverboard2, 115200, timeout=1)  # open secondary serial port 
-	fourwd = True
-	print("4WD detected")
+	time.sleep(3)
+	feedback = ser2.read_all()
+	if feedback:
+		if feedback[0] == 205 and feedback[1] == 171:
+			fourwd = True
+			print("4WD detected")
 except:
 	fourwd = False
 	print("2WD only detected")
 
-#connect to sonar
+#connect to the navspark (handles SONAR, GPS and Bumpstops)
 try:
-	serSONAR = serial.Serial(PortSONAR, 115200, timeout=1)  # open sonar serial port 
-	SONARdetected = True
-	print("SONAR detected")
+	serNavspark = serial.Serial(PortNavspark, 115200, timeout=1)  # open navspark serial port 
+	time.sleep(3)
+	if "$" in str(serNavspark.readline())[0]:
+		NavsparkDetected = True
+		print("NavSpark detected")
 except:
-	SONARdetected = False
-	print("SONAR not detected")
+	NavsparkDetected = False
+	print("NavSpark not detected")
 
 #connect to steering
 try:
@@ -66,6 +114,22 @@ def sendcmd(steerin,speed):
 	#steer = int((numpy.clip(100,-100,steerin)*steerauth*(1+((speedsteercomp-1)*abs(speed)/100)))) #disable diff steering
 	steer = 0 #don't skid steer using the hoverboards
 
+	if haltMotorsOnGeofenceBreach:
+		if haltMotors == True and haltMotorOverride == False: # if the Motors are halted because of Geofencing then set speed to 0 unless it's overridden by the FE
+			speed = 0
+
+	if haltMotorsOnBump:
+		if frontBumped == True and haltMotorOverride == False and speed > 0: # the front bump stop is pushed, set speed to 0 if they're trying to go forward. otherwise let it reverse
+			speed = 0
+		if rearBumped == True and haltMotorOverride == False and speed < 0: # the rear bump stop is pushed, set speed to 0 if they're trying to go in reverse. otherwise let it go forward
+			speed = 0
+
+	if haltMotorsOnProxBreach:
+		if frontProxBreach == True and haltMotorOverride == False and speed > 0: # the front bump stop is pushed, set speed to 0 if they're trying to go forward. otherwise let it reverse
+			speed = 0
+		if rearProxBreach == True and haltMotorOverride == False and speed < 0: # the rear bump stop is pushed, set speed to 0 if they're trying to go in reverse. otherwise let it go forward
+			speed = 0
+
 	portbusy = True
 	startB = bytes.fromhex('ABCD')[::-1] # lower byte first
 	steerB = struct.pack('h', steer)
@@ -81,6 +145,8 @@ def sendcmd(steerin,speed):
 	#do the arduino steering
 	if Steeringdetected:
 		steerin = steerin * -1 #because it's backwards
+		if haltMotors == True and haltMotorOverride == False:
+			steerin = 0
 		serSteering.write((str(numpy.clip(100,-100,steerin))+"\n").encode('utf_8')) #old mode
 	portbusy = False
 
@@ -108,14 +174,14 @@ def main():
 	loop = asyncio.get_event_loop()
 	app = loop.run_until_complete(init()) #init sio in the loop
 
-	loop.create_task(temeletry()) #add background task
+	loop.create_task(telemetry()) #add background task
 	loop.create_task(timeoutstop()) #add background task
-	loop.create_task(sonar())
+	loop.create_task(bodyControl())
 
 	web.run_app(app, port=9876, ssl_context=ssl_context, loop=loop) #run sio in the loop
 
 ###create asyncio background tasks here###
-async def temeletry():
+async def telemetry():
 	while True:
 		await asyncio.sleep(1)
 		if portbusy == False:
@@ -125,24 +191,157 @@ async def temeletry():
 					cmd1, cmd2, speedR_meas, speedL_meas, batVoltage, boardTemp, cmdLed = struct.unpack('<hhhhhhH', feedback[2:16])
 					#print(f'cmd1: {cmd1}, cmd2: {cmd2}, speedR_meas: {speedR_meas}, speedL_meas: {speedL_meas}, batVoltage: {batVoltage}, boardTemp: {boardTemp}, cmdLed: {cmdLed}')	
 					await sio.emit('telemetry', {"cmd1": cmd1, "cmd2": cmd2, "speedR_meas": speedR_meas, "speedL_meas": speedL_meas, "batVoltage": batVoltage/100, "boardTemp": boardTemp/10, "cmdLed": cmdLed})
+			if fourwd == True:
+				feedback2 = ser2.read_all()
+				if feedback2:
+					if feedback2[0] == 205 and feedback2[1] == 171: #check start byte
+						cmd1, cmd2, speedR_meas, speedL_meas, batVoltage, boardTemp, cmdLed = struct.unpack('<hhhhhhH', feedback2[2:16])
+						await sio.emit('telemetry2', {"cmd1": cmd1, "cmd2": cmd2, "speedR_meas": speedR_meas, "speedL_meas": speedL_meas, "batVoltage": batVoltage/100, "boardTemp": boardTemp/10, "cmdLed": cmdLed})
 
-async def sonar():
+async def bodyControl():
 	while True:
 		await asyncio.sleep(0.5)
-		rawSonarData = serSONAR.readline()
-		strSonarData = str(rawSonarData)
-		if "SONAR" in strSonarData:
-			sonarData = strSonarData.replace("b'SONAR{", "").replace("}","").replace("\\r\\n", "").replace("'", "")
-			sonarSplit = sonarData.split(",")
-			sonar_list = []
-			for pair in sonarSplit:
-				angle,distance = pair.split(":")
-				sonarToAdd = {"angle": int(angle), "distance": int(distance)}
-				sonar_list.append(sonarToAdd)
+		rawNavSparkData = serNavspark.readline()
+		bodyControlData = str(rawNavSparkData)
 
-			if sonar_list:
-				await sio.emit('sonar', sonar_list)
+		if "$SONAR" in bodyControlData: # SONAR data			
+			handleSonar()
 
+		if "$BUMP" in bodyControlData: # Bumpstop data
+			handleBump()
+
+		if "$BUMP" not in bodyControlData and "$SONAR" not in bodyControlData: # neither Bump or SONAR so we'll treat this as GPS data
+			handleGps(bodyControlData)
+
+def handleGps(nmeaGpsString):	
+	data,cksum,calc_cksum = nmeaChecksum(nmeaGpsString)
+	if cksum == calc_cksum:
+		for x in nmeaGpsString:
+			my_gps.update(x)
+		if (lasttime + 30) < time.time():
+			lasttime = time.time()
+			#process the NMEA coords to decimal
+			lat = round(my_gps.latitude[0] + (my_gps.latitude[1]/60),8)
+			lng = round(my_gps.longitude[0] + (my_gps.longitude[1]/60),8)
+			if my_gps.longitude[2] == "W":
+				lng = 0 - lng
+			if my_gps.latitude[2] == "S":
+				lat = 0 - lat
+			timestr = str(my_gps.timestamp[0]).zfill(2) + str(my_gps.timestamp[1]).zfill(2) + str(int(my_gps.timestamp[2])).zfill(2)
+			sats = my_gps.satellites_in_use
+			speed = my_gps.speed[2]*1000/60
+			if my_gps.fix_type == 1:
+				fixtype = "NO"
+			if my_gps.fix_type == 2:
+				fixtype = "2D"
+			if my_gps.fix_type == 3:
+				fixtype = "3D"
+			print("I can see " + str(my_gps.satellites_in_use) + " satellites. My fix is: " + fixtype + "  My coordinates are: " + str(lat) + "," + str(lng) + " The time is: " + timestr)
+			
+			#geofencing
+			point = Point(lng, lat)
+			for feature in js['features']:
+				polygon = shape(feature['geometry'])
+				if polygon.contains(point):
+					if feature['properties']['type'] == "keepout":
+						print('GPS is within Restricted zone: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will NOT be able to drive regardless of other conditions')
+						haltMotors = True
+						statusToSend = {"geofenceStatus": "keepout"}
+						sio.emit('geofenceStatus', statusToSend)
+					elif feature['properties']['type'] == "warning":
+						print('GPS is in a warning zone: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')
+						haltMotors = False
+						statusToSend = {"geofenceStatus": "warning"}
+						sio.emit('geofenceStatus', statusToSend)
+					elif feature['properties']['type'] == "keepin":
+						print('GPS is within bounds: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')
+						haltMotors = False
+						statusToSend = {"geofenceStatus": "keepin"}
+						sio.emit('geofenceStatus', statusToSend)				
+					else:
+						print('GPS is out of the keep in zone: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')
+						haltMotors = True
+						statusToSend = {"geofenceStatus": "outOfBounds"}
+						sio.emit('geofenceStatus', statusToSend)
+
+			try:
+				print ("posting the shit")
+				#contents = urllib.request.urlopen("http://roamer.tk/gps/uploadgps.php?lat="+str(lat)+"&lng="+str(lng)+"&sats="+str(sats)+"&speed="+str(speed)+"&heading="+str(my_gps.course)+"&fixtype="+fixtype+"&gpstime="+timestr).read()
+				#print("http://roamer.tk/gps/uploadgps.php?lat="+str(lat)+"&lng="+str(lng)+"&sats="+str(sats)+"&speed="+str(speed)+"&heading="+str(my_gps.course)+"&fixtype="+fixtype+"&gpstime="+timestr, headers={'User-Agent': 'Mozilla/5.0'})
+				geturl = "http://tn22.com/emf/emfroamer/gps/uploadgps.php?lat="+str(lat)+"&lng="+str(lng)+"&sats="+str(sats)+"&speed="+str(speed)+"&heading="+str(my_gps.course)+"&fixtype="+fixtype+"&gpstime="+timestr
+				r = requests.get(geturl)
+				print(r)
+				print("shit posted")
+				print("")
+			except socket.error as socketerror:
+				print("Error: ", socketerror)
+	else:
+		print("Error in checksum for GPS data: %s" % (data))
+		print("Checksums are %s and %s" % (cksum,calc_cksum))
+
+async def handleSonar(sonarString):
+	data,cksum,calc_cksum = nmeaChecksum(sonarString)
+	if cksum == calc_cksum:
+		sonarSplit = data.replace("$SONAR,").split(",")
+		sonar_list = []
+		for pair in sonarSplit:
+			angle,distance = pair.split(":")
+
+			if angle == 0 and distance < frontThreshold:
+				frontProxBreach = True
+			else:
+				frontProxBreach = False
+
+			if angle == 180 and distance < rearThreshold:
+				rearProxBreach = True
+			else:
+				rearProxBreach = False
+
+			sonarToAdd = {"angle": int(angle), "distance": int(distance)}
+			sonar_list.append(sonarToAdd)
+
+		if sonar_list:
+			await sio.emit('sonar', sonar_list)
+
+	else:
+		print("Error in checksum for SONAR data: %s" % (data))
+		print("Checksums are %s and %s" % (cksum,calc_cksum))
+
+async def handleBump(bumpString):
+	data,cksum,calc_cksum = nmeaChecksum(bumpString)
+	if cksum == calc_cksum:
+		bumpSplit = bumpString.split(",")
+		angle = int(bumpSplit[1])
+		state = int(bumpSplit[2])
+		bumpToSend = {"angle": angle, "state": state}
+
+		if angle == 0 and state == 1:
+			frontBumped = True
+		else:
+			frontBumped = False
+
+		if angle == 180 and state == 1:
+			rearBumped = True
+		else:
+			rearBumped = False
+
+		if bumpToSend:
+			await sio.emit('bump', bumpToSend)
+	else:
+		print("Error in checksum for BUMP data: %s" % (data))
+		print("Checksums are %s and %s" % (cksum,calc_cksum))
+
+def nmeaChecksum(sentence):
+	if re.search("\n$", sentence):
+		sentence = sentence[:-1]
+
+	nmeadata,cksum = re.split('\*', sentence)
+
+	calc_cksum = 0
+	for s in nmeadata:
+		calc_cksum ^= ord(s)
+
+	return nmeadata,'0x'+cksum,hex(calc_cksum)
 
 async def timeoutstop():
 	while True:
@@ -183,6 +382,16 @@ async def handle_control(sid, control):
 async def handle_analog(sid, control):
 	print("ANALOG msg from: " , sid)
 	SendAndResetTimeout(int(control.split(',')[0]),int(control.split(',')[1]))
+
+@sio.on('haltmotoroverride')
+async def handle_haltmotoroverride(sid, override):
+	print("MOTOR HALT OVERRIDE RECEIVED: ", override)
+	if override == True:
+		haltMotorOverride = True
+		print("Halt Motor BOOL IS OVERRIDDEN")
+	else:
+		haltMotorOverride = False
+		print("Halt Motor BOOL IS NOT OVERRIDDEN")
 
 @sio.event
 async def connect(sid, environ):
