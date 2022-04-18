@@ -344,7 +344,7 @@ def nmeaChecksum(sentence):
 	for s in nmeadata:
 		calc_cksum ^= ord(s)
 
-	return nmeadata,'0x'+cksum,"{:02x}".format(calc_cksum)
+	return nmeadata,('0x'+cksum).lower(),'0x'+"{:02x}".format(calc_cksum).lower()
 
 async def timeoutstop():
 	while True:
