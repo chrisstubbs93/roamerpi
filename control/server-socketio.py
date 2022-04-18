@@ -12,6 +12,7 @@ from shapely.geometry import shape, Point
 
 socket.setdefaulttimeout(10)
 my_gps = MicropyGPS()
+global lastgpstime
 lastgpstime = 0
 
 #limits & configuration
