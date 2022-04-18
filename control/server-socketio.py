@@ -334,7 +334,7 @@ async def handleBump(bumpString):
 
 def nmeaChecksum(sentence):
 
-	sentence = sentence.replace("b'", "").replace("\r\n", "")
+	sentence = sentence.replace("b'", "").replace("\\r\\n", "").replace("$", "")
 	if re.search("\n$", sentence):
 		sentence = sentence[:-1]
 
