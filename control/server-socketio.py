@@ -333,6 +333,8 @@ async def handleBump(bumpString):
 		print("Checksums are %s and %s" % (cksum,calc_cksum))
 
 def nmeaChecksum(sentence):
+
+	sentence = sentence.replace("b'", "").replace("\r\n", "")
 	if re.search("\n$", sentence):
 		sentence = sentence[:-1]
 
