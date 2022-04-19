@@ -123,6 +123,25 @@ To stop audio PWM clashing with neopixel create a file /etc/modprobe.d/snd-black
 blacklist snd_bcm2835
 ```
 
+## Wifi (TP Link Archer T4U plus v3)
+From https://github.com/morrownr/88x2bu-20210702
+```
+#this takes an absolute age:
+sudo apt install -y raspberrypi-kernel-headers bc build-essential dkms git
+
+mkdir -p ~/wifisrc
+cd ~/wifisrc
+git clone https://github.com/morrownr/88x2bu-20210702.git
+cd ~/wifisrc/88x2bu-20210702
+./ARM_RPI.sh
+sudo ./install-driver.sh
+
+#reboot the pi
+#configure ssid/pass
+sudo raspi-config
+#reboot again
+```
+
 
 ## The list goes on...
 Disable IPV6?
