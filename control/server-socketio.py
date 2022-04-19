@@ -11,8 +11,8 @@ import json
 from shapely.geometry import shape, Point
 
 socket.setdefaulttimeout(10)
-my_gps = MicropyGPS()
 lastgpstime = 0
+my_gps = MicropyGPS()
 
 #limits & configuration
 maxfwdspeed = 50.0 #max fwd speed
@@ -202,19 +202,21 @@ async def bodyControl():
 	while True:
 		await asyncio.sleep(0.5)
 		if NavsparkDetected:
-			rawNavSparkData = serNavspark.readline()
-			bodyControlData = (str(rawNavSparkData).replace("b'", "").replace("\\r\\n", "").replace("$", ""))[:-1]
+			while serNavspark.inWaiting():
+				rawNavSparkData = serNavspark.readline()
+				bodyControlData = (str(rawNavSparkData).replace("b'", "").replace("\\r\\n", "").replace("$", ""))[:-1]
 
-			if "SONAR" in bodyControlData: # SONAR data			
-				await handleSonar(bodyControlData)
+				if "SONAR" in bodyControlData: # SONAR data			
+					await handleSonar(bodyControlData)
 
-			if "BUMP" in bodyControlData: # Bumpstop data
-				await handleBump(bodyControlData)
+				if "BUMP" in bodyControlData: # Bumpstop data
+					await handleBump(bodyControlData)
 
-			if "BUMP" not in bodyControlData and "SONAR" not in bodyControlData: # neither Bump or SONAR so we'll treat this as GPS data
-				handleGps(bodyControlData)
+				if "BUMP" not in bodyControlData and "SONAR" not in bodyControlData: # neither Bump or SONAR so we'll treat this as GPS data
+					handleGps(bodyControlData)
 
 def handleGps(nmeaGpsString):	
+	global lastgpstime
 	data,cksum,calc_cksum = nmeaChecksum(nmeaGpsString)
 	if cksum == calc_cksum:
 		for x in nmeaGpsString:
@@ -267,11 +269,10 @@ def handleGps(nmeaGpsString):
 
 			try:
 				print ("posting the shit")
-				#contents = urllib.request.urlopen("http://roamer.tk/gps/uploadgps.php?lat="+str(lat)+"&lng="+str(lng)+"&sats="+str(sats)+"&speed="+str(speed)+"&heading="+str(my_gps.course)+"&fixtype="+fixtype+"&gpstime="+timestr).read()
-				#print("http://roamer.tk/gps/uploadgps.php?lat="+str(lat)+"&lng="+str(lng)+"&sats="+str(sats)+"&speed="+str(speed)+"&heading="+str(my_gps.course)+"&fixtype="+fixtype+"&gpstime="+timestr, headers={'User-Agent': 'Mozilla/5.0'})
-				geturl = "http://tn22.com/emf/emfroamer/gps/uploadgps.php?lat="+str(lat)+"&lng="+str(lng)+"&sats="+str(sats)+"&speed="+str(speed)+"&heading="+str(my_gps.course)+"&fixtype="+fixtype+"&gpstime="+timestr
-				r = requests.get(geturl)
-				print(r)
+
+				#geturl = "http://tn22.com/emf/emfroamer/gps/uploadgps.php?lat="+str(lat)+"&lng="+str(lng)+"&sats="+str(sats)+"&speed="+str(speed)+"&heading="+str(my_gps.course)+"&fixtype="+fixtype+"&gpstime="+timestr
+				#r = requests.get(geturl)
+				#print(r)
 				print("shit posted")
 				print("")
 			except socket.error as socketerror:
@@ -283,7 +284,7 @@ def handleGps(nmeaGpsString):
 async def handleSonar(sonarString):
 	data,cksum,calc_cksum = nmeaChecksum(sonarString)
 	if cksum == calc_cksum:
-		sonarSplit = data.replace("$SONAR,").split(",")
+		sonarSplit = data.replace("SONAR,", "").split(",")
 		sonar_list = []
 		for pair in sonarSplit:
 			angle,distance = pair.split(":")
