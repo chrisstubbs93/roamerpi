@@ -43,6 +43,9 @@ Needs python >3.7 probably
 ```sh
 python3 -m pip install python-socketio
 python3 -m pip install aiohttp
+pip install git+https://github.com/inmcm/micropyGPS.git
+pip install shapely
+sudo apt-get install libgeos-dev
 ```
 
 ## dyndns
