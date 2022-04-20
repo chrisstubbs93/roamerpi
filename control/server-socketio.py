@@ -83,7 +83,7 @@ try:
 					fourwd = True
 					ser2 = serialAttempt
 					print("4WD Mode - 2nd Hoverboard detected on port:" + port)				
-				elif "$SONAR" in str(serialAttempt.readline()).replace("b'", "")[0]:
+				elif "$SONAR" in str(serialAttempt.readline()).replace("b'", ""):
 					NavsparkDetected = True
 					serNavspark = serialAttempt
 					print("NavSpark detected on port:" + port)	
