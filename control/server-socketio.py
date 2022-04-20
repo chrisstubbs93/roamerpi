@@ -21,6 +21,12 @@ maxrevspeed = 25.0 #max reverse speed
 steerauth = 0.4 #adjust how much 100% steering actually steers (don't do nuffink)
 speedsteercomp = 2.2 #more steering authority at speed. 2.0 = double steering authority at 100% speed (don't do nuffink)
 PortHoverboard1 = '/dev/serial0'
+# PortHoverboard2 = '/dev/ttyUSB1'
+# PortSteering = '/dev/ttyUSB2'
+# PortNavspark = '/dev/ttyUSB0'
+Port1 = '/dev/ttyUSB1'
+Port2 = '/dev/ttyUSB2'
+Port3 = '/dev/ttyUSB0'
 
 fullchainlocation = '/etc/letsencrypt/live/bigclamps.loseyourip.com/fullchain.pem'
 privkeylocation = '/etc/letsencrypt/live/bigclamps.loseyourip.com/privkey.pem'
@@ -77,19 +83,22 @@ try:
 				print("{}: {} [{}]".format(port, desc, hwid))
 				serialAttempt = serial.Serial(port, 115200, timeout=1)
 				time.sleep(3)
-				detection = serialAttempt.read_all()
-				if detection[0] == 205 and detection[1] == 171:
-					fourwd = True
-					ser2 = serialAttempt
-					print("4WD Mode - 2nd Hoverboard detected on port:" + port)
-				elif "$SONAR" in str(detection).replace("b'", "")[0]: 
+
+
+				if "$SONAR" in str(serialAttempt.readline()).replace("b'", "")[0]:
 					NavsparkDetected = True
 					serNavspark = serialAttempt
 					print("NavSpark detected on port:" + port)
 				else:
-					Steeringdetected = True
-					serSteering = serialAttempt
-					print("Steering detected on port: " + port)
+					detection = serialAttempt.read_all()
+					if detection[0] == 205 and detection[1] == 171:
+						fourwd = True
+						ser2 = serialAttempt
+						print("4WD Mode - 2nd Hoverboard detected on port:" + port)				
+					else:
+						Steeringdetected = True
+						serSteering = serialAttempt
+						print("Steering detected on port: " + port)
 
 except:
 	print("Port auto-detection failed")
