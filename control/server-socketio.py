@@ -86,7 +86,7 @@ try:
 					attempts += 1		
 					print("Detection Attempt #" + str(attempts))							
 					detection = serialAttempt.read_all()
-					if detection[0] == 205 and detection[1] == 171 and fourwd == False:
+					if fourwd == False and detection[0] == 205 and detection[1] == 171:
 						fourwd = True
 						ser2 = serialAttempt
 						print("4WD Mode - 2nd Hoverboard detected on port:" + port)		
@@ -103,7 +103,7 @@ try:
 						break			
 
 except Exception as e:
-	print("Port auto-detection failed. Exception: " + e)
+	print("Port auto-detection failed.")
 
 ##############################################
 
