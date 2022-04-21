@@ -80,8 +80,9 @@ try:
 		
 				attempts = 0
 
-				while attempts < 5 and fourwd == False and NavsparkDetected == False and Steeringdetected == False:
+				while attempts < 5 and fourwd == False and NavsparkDetected == False and Steeringdetected == False:					
 						attempts += 1
+						print("Detection Attempt #" + attempts)
 						detection = serialAttempt.read_all()
 						if detection[0] == 205 and detection[1] == 171 and fourwd == False:
 							fourwd = True
