@@ -84,7 +84,6 @@ try:
 				attempts = 0			
 				while attempts < 5:
 					attempts += 1		
-					print("Detection Attempt #" + str(attempts))							
 					detection = serialAttempt.read_all()
 					try:
 						if detection[0] == 205 and detection[1] == 171 and fourwd == False:
@@ -108,6 +107,14 @@ try:
 except Exception as e:
 	print("Port auto-detection failed.")
 
+print("")
+print("")
+print("PORT DETECTION SUMMARY:")
+print("NavSpark detected: " + str(NavsparkDetected))
+print("Steering detected: " + str(Steeringdetected))
+print("Hoverboard #2 detected: " + str(fourwd))
+print("")
+print("")
 ##############################################
 
 def sendcmd(steerin,speed):
