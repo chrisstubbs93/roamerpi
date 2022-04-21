@@ -66,7 +66,7 @@ with open('geo.json') as f:
 	js = json.load(f)
 
 #connect to hoverboard
-ser = serial.Serial(PortHoverboard1, 115200, timeout=1)  # open main serial port
+ser = serial.Serial(PortHoverboard1, 115200, timeout=5)  # open main serial port
 
 # connect to ports (auto-detection)
 try:
