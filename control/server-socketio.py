@@ -79,8 +79,8 @@ try:
 				time.sleep(3)	
 				attempts = 0			
 				while attempts < 5:
-					print("Detection Attempt #" + attempts)					
-					attempts += 1				
+					attempts += 1		
+					print("Detection Attempt #" + str(attempts))							
 					detection = serialAttempt.read_all()
 					if detection[0] == 205 and detection[1] == 171 and fourwd == False:
 						fourwd = True
