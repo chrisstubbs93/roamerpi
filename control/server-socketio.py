@@ -77,20 +77,24 @@ try:
 				print("{}: {} [{}]".format(port, desc, hwid))
 				serialAttempt = serial.Serial(port, 115200, timeout=1)
 				time.sleep(3)
+		
+				attempts = 0
 
-				detection = serialAttempt.read_all()
-				if detection[0] == 205 and detection[1] == 171:
-					fourwd = True
-					ser2 = serialAttempt
-					print("4WD Mode - 2nd Hoverboard detected on port:" + port)				
-				elif "$SONAR" in str(serialAttempt.readline()).replace("b'", ""):
-					NavsparkDetected = True
-					serNavspark = serialAttempt
-					print("NavSpark detected on port:" + port)	
-				else:
-					Steeringdetected = True
-					serSteering = serialAttempt
-					print("Steering detected on port: " + port)				
+				while attempts < 5 and fourwd == False and NavsparkDetected == False and Steeringdetected == False:
+						attempts += 1
+						detection = serialAttempt.read_all()
+						if detection[0] == 205 and detection[1] == 171 and fourwd == False:
+							fourwd = True
+							ser2 = serialAttempt
+							print("4WD Mode - 2nd Hoverboard detected on port:" + port)				
+						elif "$SONAR" in str(serialAttempt.readline()).replace("b'", "") and NavsparkDetected == False:
+							NavsparkDetected = True
+							serNavspark = serialAttempt
+							print("NavSpark detected on port:" + port)	
+						elif Steeringdetected == False:
+							Steeringdetected = True
+							serSteering = serialAttempt
+							print("Steering detected on port: " + port)				
 
 except:
 	print("Port auto-detection failed")
