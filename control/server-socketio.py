@@ -103,7 +103,7 @@ try:
 						break			
 
 except Exception as e:
-	print("Port auto-detection failed.")
+	print("Port auto-detection failed." + e)
 
 ##############################################
 
