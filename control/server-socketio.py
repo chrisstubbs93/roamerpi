@@ -77,11 +77,10 @@ try:
 				print("{}: {} [{}]".format(port, desc, hwid))
 				serialAttempt = serial.Serial(port, 115200, timeout=5)
 				time.sleep(3)	
-				attempts = 0
-
-				while attempts < 5:					
-					attempts += 1
-					print("Detection Attempt #" + attempts)
+				attempts = 0			
+				while attempts < 5:
+					print("Detection Attempt #" + attempts)					
+					attempts += 1				
 					detection = serialAttempt.read_all()
 					if detection[0] == 205 and detection[1] == 171 and fourwd == False:
 						fourwd = True
