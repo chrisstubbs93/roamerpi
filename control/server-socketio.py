@@ -86,24 +86,27 @@ try:
 					attempts += 1		
 					print("Detection Attempt #" + str(attempts))							
 					detection = serialAttempt.read_all()
-					if fourwd == False and detection[0] == 205 and detection[1] == 171:
-						fourwd = True
-						ser2 = serialAttempt
-						print("4WD Mode - 2nd Hoverboard detected on port:" + port)		
-						break		
-					elif "$SONAR" in str(serialAttempt.readline()).replace("b'", "") and NavsparkDetected == False:
-						NavsparkDetected = True
-						serNavspark = serialAttempt
-						print("NavSpark detected on port:" + port)	
-						break
-					elif Steeringdetected == False:
-						Steeringdetected = True
-						serSteering = serialAttempt
-						print("Steering detected on port: " + port)	
-						break			
+					try:
+						if detection[0] == 205 and detection[1] == 171 and fourwd == False:
+							fourwd = True
+							ser2 = serialAttempt
+							print("4WD Mode - 2nd Hoverboard detected on port:" + port)		
+							break		
+						elif "$SONAR" in str(serialAttempt.readline()).replace("b'", "") and NavsparkDetected == False:
+							NavsparkDetected = True
+							serNavspark = serialAttempt
+							print("NavSpark detected on port:" + port)	
+							break
+						elif Steeringdetected == False:
+							Steeringdetected = True
+							serSteering = serialAttempt
+							print("Steering detected on port: " + port)	
+							break		
+					except:
+						print("Can't determine port type. Is it connected? Port: " + port)	
 
 except Exception as e:
-	print("Port auto-detection failed." + e)
+	print("Port auto-detection failed.")
 
 ##############################################
 
