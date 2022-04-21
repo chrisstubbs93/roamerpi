@@ -98,8 +98,8 @@ try:
 						print("Steering detected on port: " + port)	
 						break			
 
-except:
-	print("Port auto-detection failed")
+except Exception as e:
+	print("Port auto-detection failed. Exception: " + e)
 
 ##############################################
 
