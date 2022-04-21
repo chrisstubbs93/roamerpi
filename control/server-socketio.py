@@ -75,7 +75,7 @@ try:
 	for port, desc, hwid in sorted(ports):
 			if "USB" in port:
 				print("{}: {} [{}]".format(port, desc, hwid))
-				serialAttempt = serial.Serial(port, 115200, timeout=1)
+				serialAttempt = serial.Serial(port, 115200, timeout=5)
 				time.sleep(3)
 		
 				attempts = 0
