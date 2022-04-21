@@ -65,6 +65,10 @@ rightThreshold = 15
 with open('geo.json') as f:
 	js = json.load(f)
 
+#default the port states to false:
+fourwd = False
+NavsparkDetected = False
+Steeringdetected = False
 #connect to hoverboard
 ser = serial.Serial(PortHoverboard1, 115200, timeout=5)  # open main serial port
 
