@@ -14,6 +14,8 @@ raspi-config
 - enable vnc
 - disable serial shell
 - join wifi
+- enable composite output
+- set vnc res to 720x480
 
 ## for lite OS only, install missing stuff:
 ```sh
