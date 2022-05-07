@@ -2,6 +2,7 @@ from contextlib import nullcontext
 import serial, struct, time, numpy # for hoverboard comms
 import urllib.request
 from aiohttp import web
+import aiohttp
 import socketio, ssl, asyncio, logging
 import re
 import socket
