@@ -186,6 +186,15 @@ def sendcmd(steerin,speed):
 	Sends a bytearray for controlling the hoverboard
 	:param steer: -1000...1000	:param speed: -1000...1000	:
 	'''
+	global haltMotors
+	global haltMotorOverride
+	global frontBumped
+	global rearBumped
+	global frontProxBreach
+	global rearProxBreach
+	global leftIndicate
+	global rightIndicate
+
 	if speed > 0:
 		speed = int((numpy.clip(100,-100,speed)/100.0)*maxfwdspeed)
 	else:
@@ -310,6 +319,9 @@ async def bodyControl():
 					handleGps(bodyControlData)
 
 async def indicatorControl():
+	global leftIndicate
+	global rightIndicate
+
 	while True:
 		for n in reversed(range(0, 9)):
 			if rightIndicate or hazards:
@@ -331,34 +343,9 @@ async def indicatorControl():
 		
 		pixels.show()
 
-async def indicate_right():
-	#while True:
-	await sweep_fill_range(pixels, ORANGE, Right_Front_Indicate_Start, Right_Front_Indicate_End, True)
-	await asyncio.sleep(0.5)
-	for n in reversed(range(Right_Front_Indicate_Start,Right_Front_Indicate_End+1)):
-		pixels[n] = WHITE
- 
-async def indicate_left():
-	#while True:		
-	await sweep_fill_range(pixels, ORANGE, Left_Front_Indicate_Start, Left_Front_Indicate_End)
-	await asyncio.sleep(0.5)
-	for n in range(Left_Front_Indicate_Start,Left_Front_Indicate_End+1):
-		pixels[n] = WHITE
-
-async def sweep_fill_range(neo,color=(255,0,0),start=0,end=7,reversedir=False,delay=0.05):
-    if reversedir:
-        for n in reversed(range(start,end+1)):
-            neo[n]=color
-            neo.show()
-            await asyncio.sleep(delay)
-    else:
-        for n in range(start, end+1):
-            neo[n]=color
-            neo.show()
-            await asyncio.sleep(delay)
-
 def handleGps(nmeaGpsString):	
 	global lastgpstime
+	global haltMotors
 	data,cksum,calc_cksum = nmeaChecksum(nmeaGpsString)
 	if cksum == calc_cksum:
 		for x in nmeaGpsString:
@@ -424,6 +411,8 @@ def handleGps(nmeaGpsString):
 		print("Checksums are %s and %s" % (cksum,calc_cksum))
 
 async def handleSonar(sonarString):
+	global frontProxBreach
+	global rearProxBreach
 	data,cksum,calc_cksum = nmeaChecksum(sonarString)
 	if cksum == calc_cksum:
 		sonarSplit = data.replace("SONAR,", "").split(",")
@@ -454,6 +443,8 @@ async def handleSonar(sonarString):
 		print("Checksums are %s and %s" % (cksum,calc_cksum))
 
 async def handleBump(bumpString):
+	global frontBumped
+	global rearBumped
 	data,cksum,calc_cksum = nmeaChecksum(bumpString)
 	if cksum == calc_cksum:
 		bumpSplit = data.split(",")
@@ -533,6 +524,7 @@ async def handle_analog(sid, control):
 
 @sio.on('haltmotoroverride')
 async def handle_haltmotoroverride(sid, override):
+	global haltMotorOverride
 	print("MOTOR HALT OVERRIDE RECEIVED: ", override)
 	if override == True:
 		haltMotorOverride = True
