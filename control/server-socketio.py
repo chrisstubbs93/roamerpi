@@ -447,8 +447,11 @@ async def handleGps(nmeaGpsString):
 				print ("posting the shit")
 
 				geturl = "http://roamer.chris-stubbs.co.uk/gps/uploadgps.php?lat="+str(lat)+"&lng="+str(lng)+"&sats="+str(sats)+"&speed="+str(speed)+"&heading="+str(my_gps.course)+"&fixtype="+fixtype+"&gpstime="+timestr
-				async with requests.get(geturl) as resp:
-					print(resp.json())
+				
+				async with aiohttp.ClientSession() as session:
+					async with session.get(geturl) as resp:
+						response = await resp.json()
+						print(str(response))
 
 				print("shit posted")
 				print("")
