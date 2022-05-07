@@ -447,8 +447,9 @@ async def handleGps(nmeaGpsString):
 				print ("posting the shit")
 
 				geturl = "http://roamer.chris-stubbs.co.uk/gps/uploadgps.php?lat="+str(lat)+"&lng="+str(lng)+"&sats="+str(sats)+"&speed="+str(speed)+"&heading="+str(my_gps.course)+"&fixtype="+fixtype+"&gpstime="+timestr
-				r = requests.get(geturl)
-				print(r)
+				async with requests.get(geturl) as resp:
+					print(resp.json())
+
 				print("shit posted")
 				print("")
 			except socket.error as socketerror:
