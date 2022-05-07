@@ -312,11 +312,16 @@ async def indicate_left():
 		pixels.fill((255, 255, 255))
 
 async def sweep_fill_range(neo,color=(255,0,0),start=0,end=7,reversedir=False,delay=0.05):
-	if reversedir:
-		for n in reversed(range(start,end+1)):
-			neo[n]=color
-			neo.show()
-			await asyncio.sleep(delay)
+    if reversedir:
+        for n in reversed(range(start,end+1)):
+            neo[n]=color
+            neo.show()
+            await asyncio.sleep(delay)
+    else:
+        for n in range(start, end+1):
+            neo[n]=color
+            neo.show()
+            await asyncio.sleep(delay)
 
 def handleGps(nmeaGpsString):	
 	global lastgpstime
