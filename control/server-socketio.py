@@ -256,7 +256,7 @@ def main():
 	loop.create_task(timeoutstop()) #add background task
 	loop.create_task(bodyControl())
 
-	loop.create_task(lightingControl())
+	loop.create_task(indicatorControl())
 	#loop.create_task(indicate_left())
 
 	web.run_app(app, port=9876, ssl_context=ssl_context, loop=loop) #run sio in the loop
@@ -296,12 +296,15 @@ async def bodyControl():
 				if "BUMP" not in bodyControlData and "SONAR" not in bodyControlData: # neither Bump or SONAR so we'll treat this as GPS data
 					handleGps(bodyControlData)
 
-async def lightingControl():
+async def indicatorControl():
 	while True:
-		loop = asyncio.get_event_loop()
-		loop.create_task(indicate_right())
-		loop.create_task(indicate_left())
-		await asyncio.sleep(1)
+		for n in range(0, 8):
+			pixels[n]=ORANGE		
+			pixels[Left_Front_Indicate_End - n]=ORANGE
+			pixels.show()
+			await asyncio.sleep(0.05)
+		await asyncio.sleep(0.5)
+		pixels.fill(WHITE)
 
 async def indicate_right():
 	#while True:
