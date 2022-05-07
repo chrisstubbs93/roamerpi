@@ -2,7 +2,6 @@ from contextlib import nullcontext
 import serial, struct, time, numpy # for hoverboard comms
 import urllib.request
 from aiohttp import web
-import aiohttp
 import socketio, ssl, asyncio, logging
 import re
 import socket
@@ -448,12 +447,8 @@ async def handleGps(nmeaGpsString):
 				print ("posting the shit")
 
 				geturl = "http://roamer.chris-stubbs.co.uk/gps/uploadgps.php?lat="+str(lat)+"&lng="+str(lng)+"&sats="+str(sats)+"&speed="+str(speed)+"&heading="+str(my_gps.course)+"&fixtype="+fixtype+"&gpstime="+timestr
-				
-				async with aiohttp.ClientSession() as session:
-					async with session.get(geturl) as resp:
-						response = await resp.json()
-						#print(str(response))
-
+				r = requests.get(geturl)
+				print(r)
 				print("shit posted")
 				print("")
 			except socket.error as socketerror:
