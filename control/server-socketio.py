@@ -241,10 +241,7 @@ def sendcmd(steerin,speed):
 			leftIndicate = True
 		else:
 			rightIndicate = False
-			leftIndicate = False
-		print("steer: " + str(steerin))
-		print("right indicator: " + str(rightIndicate))
-		print("left indicator: " + str(leftIndicate))
+			leftIndicate = False		
 		if haltMotors == True and haltMotorOverride == False:
 			steerin = 0
 		serSteering.write((str(numpy.clip(100,-100,steerin))+"\n").encode('utf_8')) #old mode
@@ -421,15 +418,13 @@ async def handleSonar(sonarString):
 			angle,distance = pair.split(":")
 
 			if angle == 0 and distance < frontThreshold:
-				print("Front prox breach detected")
 				frontProxBreach = True
-			else:
+			elif angle == 0 and distance > frontThreshold:
 				frontProxBreach = False
 
 			if angle == 180 and distance < rearThreshold:
-				print("Rear prox breach detected")
 				rearProxBreach = True
-			else:
+			elif angle == 180 and distance > rearThreshold:
 				rearProxBreach = False
 
 			sonarToAdd = {"angle": int(angle), "distance": int(distance)}
@@ -454,17 +449,13 @@ async def handleBump(bumpString):
 
 		if angle == 0 and state == 1:
 			frontBumped = True
-			print("Front bump ON")
 		elif angle == 0 and state == 0:
 			frontBumped = False
-			print("Front bump OFF")
 
 		if angle == 180 and state == 1:
 			rearBumped = True
-			print("Rear bump ON")
 		elif angle == 180 and state == 0:
 			rearBumped = False
-			print("Rear bump OFF")
 
 		if bumpToSend:
 			await sio.emit('bump', bumpToSend)
