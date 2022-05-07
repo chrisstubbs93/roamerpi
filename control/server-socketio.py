@@ -261,7 +261,11 @@ def SendAndResetTimeout(steer,speed):
 
 def stp():
 	global lastSerialSendMs
-	print("ms since last serial: " + str(current_milli_time()-lastSerialSendMs))
+	timez = current_milli_time()-lastSerialSendMs
+	print("ms since last serial: " + str(timez))
+	if timez > 700:
+		print("WARNING SOMETHING HAS BEFALLEN ME")
+		
 	lastSerialSendMs = current_milli_time()
 	sendcmd(0,0)
 
