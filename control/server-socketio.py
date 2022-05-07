@@ -298,8 +298,9 @@ async def bodyControl():
 
 async def lightingControl():
 	while True:
-		await indicate_right()
-		await indicate_left()
+		loop = asyncio.get_event_loop()
+		loop.create_task(indicate_right())
+		loop.create_task(indicate_left())
 
 async def indicate_right():
 	#while True:
@@ -309,7 +310,7 @@ async def indicate_right():
 		pixels[n] = WHITE
  
 async def indicate_left():
-	#while True:
+	#while True:		
 	await sweep_fill_range(pixels, ORANGE, Left_Front_Indicate_Start, Left_Front_Indicate_End)
 	await asyncio.sleep(0.5)
 	for n in range(Left_Front_Indicate_Start,Left_Front_Indicate_End+1):
