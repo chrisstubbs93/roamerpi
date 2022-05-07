@@ -34,6 +34,9 @@ portbusy = False
 lasttime = 0
 fourwd = False
 
+global clientConnected
+clientConnected = False
+
 #global motor halt vars for GPS/SONAR/BUMP
 global haltMotors
 haltMotors = False
@@ -86,7 +89,7 @@ pixels = neopixel.NeoPixel(
 )
 
 global braking
-braking = False
+braking = True
 
 global hazards
 hazards = False
@@ -98,7 +101,7 @@ global rightIndicate
 rightIndicate = False
 
 global headlights
-headlights = False
+headlights = True
 
 global idleAnimation
 idleAnimation = False
@@ -271,12 +274,10 @@ def main():
 	loop = asyncio.get_event_loop()
 	app = loop.run_until_complete(init()) #init sio in the loop
 
-	loop.create_task(telemetry()) #add background task
-	loop.create_task(timeoutstop()) #add background task
+	loop.create_task(telemetry())
+	loop.create_task(timeoutstop()) 
 	loop.create_task(bodyControl())
-
-	loop.create_task(indicatorControl())
-	#loop.create_task(indicate_left())
+	loop.create_task(lightingControl())
 
 	web.run_app(app, port=9876, ssl_context=ssl_context, loop=loop) #run sio in the loop
 
@@ -315,30 +316,69 @@ async def bodyControl():
 				if "BUMP" not in bodyControlData and "SONAR" not in bodyControlData: # neither Bump or SONAR so we'll treat this as GPS data
 					handleGps(bodyControlData)
 
-async def indicatorControl():
+async def lightingControl():
 	global leftIndicate
 	global rightIndicate
+	global hazards
+	global headlights
+	global braking
 
 	while True:
-		for n in reversed(range(0, 9)):
-			if rightIndicate or hazards:
-				pixels[n]=ORANGE		
-				pixels[Right_Rear_Indicate_Start + n]=ORANGE
+		if clientConnected:
+			for n in reversed(range(0, 9)):
+				if rightIndicate or hazards:
+					pixels[n]=ORANGE		
+					pixels[Right_Rear_Indicate_Start + n]=ORANGE
 
-			if leftIndicate or hazards:
-				pixels[Left_Front_Indicate_End - n]=ORANGE		
-				pixels[Left_Rear_Indicate_End - n]=ORANGE
+				if leftIndicate or hazards:
+					pixels[Left_Front_Indicate_End - n]=ORANGE		
+					pixels[Left_Rear_Indicate_End - n]=ORANGE
 
-			pixels.show()
-			await asyncio.sleep(0.05)
-		await asyncio.sleep(0.5)
+				pixels.show()
+				await asyncio.sleep(0.05)
+			await asyncio.sleep(0.5)
 
-		for n in range(0, Left_Front_Indicate_End+1):
-			pixels[n]=WHITE #set front bar to white			
-		for n in range(Right_Rear_Indicate_Start, Left_Rear_Indicate_End+1):
-			pixels[n]=RED #set rear bar to red
-		
+			if headlights:
+				for n in range(0, Left_Front_Indicate_End+1):
+					pixels[n]=WHITE #set front bar to white	
+
+			if braking:
+				for n in range(Right_Rear_Indicate_Start, Left_Rear_Indicate_End+1):
+					pixels[n]=RED #set rear bar to red
+		else:
+			rainbow_cycle(0.003)
+			await asyncio.sleep(0.81)
+
 		pixels.show()
+
+def wheel(pos):
+	# Input a value 0 to 255 to get a color value.
+	# The colours are a transition r - g - b - back to r.
+	if pos < 0 or pos > 255:
+		r = g = b = 0
+	elif pos < 85:
+		r = int(pos * 3)
+		g = int(255 - pos * 3)
+		b = 0
+	elif pos < 170:
+		pos -= 85
+		r = int(255 - pos * 3)
+		g = 0
+		b = int(pos * 3)
+	else:
+		pos -= 170
+		r = 0
+		g = int(pos * 3)
+		b = int(255 - pos * 3)
+	return (r, g, b) if ORDER in (neopixel.RGB, neopixel.GRB) else (r, g, b, 0)
+
+def rainbow_cycle(wait):
+	for j in range(255):
+		for i in range(num_pixels):
+			pixel_index = (i * 256 // num_pixels) + j
+			pixels[i] = wheel(pixel_index & 255)
+		pixels.show()
+		time.sleep(wait)
 
 def handleGps(nmeaGpsString):	
 	global lastgpstime
@@ -532,10 +572,14 @@ async def handle_haltmotoroverride(sid, override):
 @sio.event
 async def connect(sid, environ):
 	print('Client Connected: ', sid)
+	global clientConnected
+	clientConnected = True
 
 @sio.event
 async def disconnect(sid):
 	print('Client Disconnected: ', sid)
+	global clientConnected
+	clientConnected = False
 	print("motors stop")
 	stp()
 
