@@ -419,8 +419,10 @@ async def handleSonar(sonarString):
 
 			if angle == 0 and distance < frontThreshold:
 				frontProxBreach = True
+				print("front prox ON")
 			elif angle == 0 and distance > frontThreshold:
 				frontProxBreach = False
+				print("front prox OFF")
 
 			if angle == 180 and distance < rearThreshold:
 				rearProxBreach = True
