@@ -79,6 +79,7 @@ ORDER = neopixel.GRB
 # colours
 ORANGE = (255,140,0)
 WHITE = (255, 255, 255)
+RED = (0, 255, 0)
 
 pixels = neopixel.NeoPixel(
 	pixel_pin, num_pixels, brightness=0.2, auto_write=False, pixel_order=ORDER
@@ -301,10 +302,17 @@ async def indicatorControl():
 		for n in reversed(range(0, 9)):
 			pixels[n]=ORANGE		
 			pixels[Left_Front_Indicate_End - n]=ORANGE
+			pixels[Right_Rear_Indicate_Start + n]=ORANGE
+			pixels[Left_Rear_Indicate_End - n]=ORANGE
 			pixels.show()
 			await asyncio.sleep(0.05)
 		await asyncio.sleep(0.5)
-		pixels.fill(WHITE)
+		for n in range(0, Left_Front_Indicate_End+1):
+			pixels[n]=WHITE #set front bar to white
+			pixels.show()
+		for n in range(Right_Rear_Indicate_Start, Left_Rear_Indicate_End+1):
+			pixels[n]=RED #set front bar to white
+			pixels.show()
 
 async def indicate_right():
 	#while True:
