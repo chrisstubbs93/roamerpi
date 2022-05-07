@@ -230,7 +230,10 @@ def sendcmd(steerin,speed):
 		elif steerin > 20:
 			rightIndicate = True
 			leftIndicate = False
-
+		else:
+			rightIndicate = False
+			leftIndicate = False
+		print("steer: " + str(steerin))
 		if haltMotors == True and haltMotorOverride == False:
 			steerin = 0
 		serSteering.write((str(numpy.clip(100,-100,steerin))+"\n").encode('utf_8')) #old mode
