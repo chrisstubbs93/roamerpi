@@ -265,7 +265,7 @@ def stp():
 	print("ms since last serial: " + str(timez))
 	if timez > 700:
 		print("WARNING SOMETHING HAS BEFALLEN ME")
-		
+
 	lastSerialSendMs = current_milli_time()
 	sendcmd(0,0)
 
@@ -324,7 +324,7 @@ async def bodyControl():
 					await handleBump(bodyControlData)
 
 				if "BUMP" not in bodyControlData and "SONAR" not in bodyControlData: # neither Bump or SONAR so we'll treat this as GPS data
-					handleGps(bodyControlData)
+					await handleGps(bodyControlData)
 
 async def lightingControl():
 	global leftIndicate
@@ -390,7 +390,7 @@ async def rainbow_cycle(wait):
 		pixels.show()
 		await asyncio.sleep(wait)
 
-def handleGps(nmeaGpsString):	
+async def handleGps(nmeaGpsString):	
 	global lastgpstime
 	global haltMotors
 	data,cksum,calc_cksum = nmeaChecksum(nmeaGpsString)
