@@ -207,7 +207,7 @@ def sendcmd(steerin,speed):
 			speed = 0
 
 	if haltMotorsOnBump:
-		if frontBumped == True and haltMotorOverride == False: # the front bump stop is pushed, set speed to 0 if they're trying to go forward. otherwise let it reverse
+		if frontBumped == True and haltMotorOverride == False and speed > 0: # the front bump stop is pushed, set speed to 0 if they're trying to go forward. otherwise let it reverse
 			speed = 0
 		if rearBumped == True and haltMotorOverride == False and speed < 0: # the rear bump stop is pushed, set speed to 0 if they're trying to go in reverse. otherwise let it go forward
 			speed = 0
@@ -457,6 +457,7 @@ async def handleBump(bumpString):
 			print("Front bump detected")
 		else:
 			frontBumped = False
+			print("Front bump disabled")
 
 		if angle == 180 and state == 1:
 			rearBumped = True
