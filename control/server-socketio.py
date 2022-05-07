@@ -79,7 +79,7 @@ ORDER = neopixel.GRB
 # colours
 ORANGE = (255,140,0)
 WHITE = (255, 255, 255)
-RED = (0, 255, 0)
+RED = (255, 0, 0)
 
 pixels = neopixel.NeoPixel(
 	pixel_pin, num_pixels, brightness=0.2, auto_write=False, pixel_order=ORDER
@@ -224,6 +224,13 @@ def sendcmd(steerin,speed):
 	#do the arduino steering
 	if Steeringdetected:
 		steerin = steerin * -1 #because it's backwards
+		if steerin < -20:
+			rightIndicate = False
+			leftIndicate = True
+		elif steerin > 20:
+			rightIndicate = True
+			leftIndicate = False
+
 		if haltMotors == True and haltMotorOverride == False:
 			steerin = 0
 		serSteering.write((str(numpy.clip(100,-100,steerin))+"\n").encode('utf_8')) #old mode
@@ -300,18 +307,22 @@ async def bodyControl():
 async def indicatorControl():
 	while True:
 		for n in reversed(range(0, 9)):
-			pixels[n]=ORANGE		
-			pixels[Left_Front_Indicate_End - n]=ORANGE
-			pixels[Right_Rear_Indicate_Start + n]=ORANGE
-			pixels[Left_Rear_Indicate_End - n]=ORANGE
+			if rightIndicate or hazards:
+				pixels[n]=ORANGE		
+				pixels[Right_Rear_Indicate_Start + n]=ORANGE
+
+			if leftIndicate or hazards:
+				pixels[Left_Front_Indicate_End - n]=ORANGE		
+				pixels[Left_Rear_Indicate_End - n]=ORANGE
+
 			pixels.show()
 			await asyncio.sleep(0.05)
 		await asyncio.sleep(0.5)
-		
+
 		for n in range(0, Left_Front_Indicate_End+1):
 			pixels[n]=WHITE #set front bar to white			
 		for n in range(Right_Rear_Indicate_Start, Left_Rear_Indicate_End+1):
-			pixels[n]=RED #set front bar to white
+			pixels[n]=RED #set rear bar to red
 		
 		pixels.show()
 
