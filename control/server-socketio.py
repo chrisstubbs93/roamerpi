@@ -307,12 +307,13 @@ async def indicatorControl():
 			pixels.show()
 			await asyncio.sleep(0.05)
 		await asyncio.sleep(0.5)
+		
 		for n in range(0, Left_Front_Indicate_End+1):
-			pixels[n]=WHITE #set front bar to white
-			pixels.show()
+			pixels[n]=WHITE #set front bar to white			
 		for n in range(Right_Rear_Indicate_Start, Left_Rear_Indicate_End+1):
 			pixels[n]=RED #set front bar to white
-			pixels.show()
+		
+		pixels.show()
 
 async def indicate_right():
 	#while True:
