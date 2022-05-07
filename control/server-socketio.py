@@ -415,7 +415,9 @@ async def handleSonar(sonarString):
 		sonarSplit = data.replace("SONAR,", "").split(",")
 		sonar_list = []
 		for pair in sonarSplit:
-			angle,distance = pair.split(":")
+			angleStr,distanceStr = pair.split(":")
+			angle = int(angleStr)
+			distance = int(distanceStr)
 			print("angle: " + str(angle))
 			print("distance: " + str(distance))
 			if angle == 0 and distance < frontThreshold:
