@@ -256,8 +256,8 @@ def main():
 	loop.create_task(timeoutstop()) #add background task
 	loop.create_task(bodyControl())
 
-	loop.create_task(indicate_right())
-	loop.create_task(indicate_left())
+	loop.create_task(lightingControl())
+	#loop.create_task(indicate_left())
 
 	web.run_app(app, port=9876, ssl_context=ssl_context, loop=loop) #run sio in the loop
 
@@ -297,22 +297,23 @@ async def bodyControl():
 					handleGps(bodyControlData)
 
 async def lightingControl():
-	indicate_right()
-	indicate_left()
+	while True:
+		await indicate_right()
+		await indicate_left()
 
 async def indicate_right():
-	while True:
-		await sweep_fill_range(pixels, ORANGE, Right_Front_Indicate_Start, Right_Front_Indicate_End, True)
-		await asyncio.sleep(0.5)
-		for n in reversed(range(Right_Front_Indicate_Start,Right_Front_Indicate_End+1)):
-			pixels[n] = WHITE
+	#while True:
+	await sweep_fill_range(pixels, ORANGE, Right_Front_Indicate_Start, Right_Front_Indicate_End, True)
+	await asyncio.sleep(0.5)
+	for n in reversed(range(Right_Front_Indicate_Start,Right_Front_Indicate_End+1)):
+		pixels[n] = WHITE
  
 async def indicate_left():
-	while True:
-		await sweep_fill_range(pixels, ORANGE, Left_Front_Indicate_Start, Left_Front_Indicate_End)
-		await asyncio.sleep(0.5)
-		for n in range(Left_Front_Indicate_Start,Left_Front_Indicate_End+1):
-			pixels[n] = WHITE
+	#while True:
+	await sweep_fill_range(pixels, ORANGE, Left_Front_Indicate_Start, Left_Front_Indicate_End)
+	await asyncio.sleep(0.5)
+	for n in range(Left_Front_Indicate_Start,Left_Front_Indicate_End+1):
+		pixels[n] = WHITE
 
 async def sweep_fill_range(neo,color=(255,0,0),start=0,end=7,reversedir=False,delay=0.05):
     if reversedir:
