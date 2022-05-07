@@ -301,13 +301,13 @@ async def lightingControl():
 
 async def indicate_right():
 	while True:
-		sweep_fill_range(pixels, ORANGE, Right_Front_Indicate_Start, Right_Front_Indicate_End, True)
+		await sweep_fill_range(pixels, ORANGE, Right_Front_Indicate_Start, Right_Front_Indicate_End, True)
 		await asyncio.sleep(0.5)
 		pixels.fill((255, 255, 255))
  
 async def indicate_left():
 	while True:
-		sweep_fill_range(pixels, ORANGE, Left_Front_Indicate_Start, Left_Front_Indicate_End)
+		await sweep_fill_range(pixels, ORANGE, Left_Front_Indicate_Start, Left_Front_Indicate_End)
 		await asyncio.sleep(0.5)
 		pixels.fill((255, 255, 255))
 
