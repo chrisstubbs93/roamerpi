@@ -5,7 +5,7 @@ from aiohttp import web
 import socketio, ssl, asyncio, logging
 import re
 import socket
-import micropyGPS
+from micropyGPS import MicropyGPS
 import requests
 import json
 from shapely.geometry import shape, Point
@@ -16,7 +16,7 @@ import neopixel
 
 socket.setdefaulttimeout(10)
 lastgpstime = 0
-my_gps = micropyGPS()
+my_gps = MicropyGPS()
 
 #limits & configuration
 maxfwdspeed = 50.0 #max fwd speed

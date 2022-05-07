@@ -109,7 +109,7 @@ Raspberry Pi and installs Blinka
 		default_python = 2
 		if not shell.prompt("Continue?"):
 			shell.exit()
-	sys_update()
+	#sys_update()
 	check_blinka_python_version()
 	#set_raspiconfig()
 	#update_python()
