@@ -327,12 +327,12 @@ async def lightingControl():
 		if clientConnected:
 			for n in reversed(range(0, 9)):
 				if rightIndicate or hazards:
-					pixels[n]=ORANGE		
-					pixels[Right_Rear_Indicate_Start + n]=ORANGE
+					pixels[n] = ORANGE		
+					pixels[Right_Rear_Indicate_Start + n] = ORANGE
 
 				if leftIndicate or hazards:
-					pixels[Left_Front_Indicate_End - n]=ORANGE		
-					pixels[Left_Rear_Indicate_End - n]=ORANGE
+					pixels[Left_Front_Indicate_End - n] = ORANGE		
+					pixels[Left_Rear_Indicate_End - n] = ORANGE
 
 				pixels.show()
 				await asyncio.sleep(0.05)
@@ -340,13 +340,13 @@ async def lightingControl():
 
 			if headlights:
 				for n in range(0, Left_Front_Indicate_End+1):
-					pixels[n]=WHITE #set front bar to white	
+					pixels[n] = WHITE #set front bar to white	
 
 			if braking:
 				for n in range(Right_Rear_Indicate_Start, Left_Rear_Indicate_End+1):
-					pixels[n]=RED #set rear bar to red
+					pixels[n] = RED #set rear bar to red
 		else:
-			rainbow_cycle(0.003)
+			await rainbow_cycle(0.003)
 			await asyncio.sleep(0.81)
 
 		pixels.show()
@@ -372,13 +372,13 @@ def wheel(pos):
 		b = int(255 - pos * 3)
 	return (r, g, b) if ORDER in (neopixel.RGB, neopixel.GRB) else (r, g, b, 0)
 
-def rainbow_cycle(wait):
+async def rainbow_cycle(wait):
 	for j in range(255):
 		for i in range(num_pixels):
 			pixel_index = (i * 256 // num_pixels) + j
 			pixels[i] = wheel(pixel_index & 255)
 		pixels.show()
-		time.sleep(wait)
+		await asyncio.sleep(wait)
 
 def handleGps(nmeaGpsString):	
 	global lastgpstime
