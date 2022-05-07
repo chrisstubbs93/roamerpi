@@ -128,11 +128,12 @@ sudo nano /boot/config.txt
 ```
 Add this to the end:
 ```sh
-dtoverlay=pi3-disable-bt
+dtoverlay=disable-bt
 ```
-Disable HCIUart service and reboot
+Disable Services and reboot
 ```sh
 sudo systemctl disable hciuart.service
+sudo systemctl disable bluetooth.service
 sudo reboot
 ```
 
