@@ -523,7 +523,7 @@ def nmeaChecksum(sentence):
 	return nmeadata,('0x'+cksum).lower(),'0x'+"{:02x}".format(calc_cksum).lower()
 
 def current_milli_time():
-	return round(time.time_ns() / 1000)
+	return round(time.time_ns() / 1000000)
 
 async def timeoutstop():
 	while True:
