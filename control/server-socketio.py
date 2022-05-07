@@ -416,7 +416,8 @@ async def handleSonar(sonarString):
 		sonar_list = []
 		for pair in sonarSplit:
 			angle,distance = pair.split(":")
-
+			print("angle: " + str(angle))
+			print("distance: " + str(distance))
 			if angle == 0 and distance < frontThreshold:
 				frontProxBreach = True
 				print("front prox ON")
