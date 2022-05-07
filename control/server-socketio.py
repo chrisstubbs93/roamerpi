@@ -301,7 +301,7 @@ async def lightingControl():
 		loop = asyncio.get_event_loop()
 		loop.create_task(indicate_right())
 		loop.create_task(indicate_left())
-		await asyncio.sleep(0.5)
+		await asyncio.sleep(1)
 
 async def indicate_right():
 	#while True:
