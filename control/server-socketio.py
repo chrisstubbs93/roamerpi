@@ -234,6 +234,8 @@ def sendcmd(steerin,speed):
 			rightIndicate = False
 			leftIndicate = False
 		print("steer: " + str(steerin))
+		print("right indicator: " + str(rightIndicate))
+		print("left indicator: " + str(leftIndicate))
 		if haltMotors == True and haltMotorOverride == False:
 			steerin = 0
 		serSteering.write((str(numpy.clip(100,-100,steerin))+"\n").encode('utf_8')) #old mode
