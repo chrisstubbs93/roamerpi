@@ -302,21 +302,21 @@ async def lightingControl():
 async def indicate_right():
 	while True:
 		sweep_fill_range(pixels, ORANGE, Right_Front_Indicate_Start, Right_Front_Indicate_End, True)
-		asyncio.sleep(0.5)
+		await asyncio.sleep(0.5)
 		pixels.fill((255, 255, 255))
  
 async def indicate_left():
 	while True:
 		sweep_fill_range(pixels, ORANGE, Left_Front_Indicate_Start, Left_Front_Indicate_End)
-		asyncio.sleep(0.5)
+		await asyncio.sleep(0.5)
 		pixels.fill((255, 255, 255))
 
-def sweep_fill_range(neo,color=(255,0,0),start=0,end=7,reversedir=False,delay=0.05):
+async def sweep_fill_range(neo,color=(255,0,0),start=0,end=7,reversedir=False,delay=0.05):
 	if reversedir:
 		for n in reversed(range(start,end+1)):
 			neo[n]=color
 			neo.show()
-			asyncio.sleep(delay)
+			await asyncio.sleep(delay)
 
 def handleGps(nmeaGpsString):	
 	global lastgpstime
