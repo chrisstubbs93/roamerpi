@@ -10,6 +10,9 @@ import requests
 import json
 from shapely.geometry import shape, Point
 import serial.tools.list_ports
+import time
+import board
+import neopixel
 
 socket.setdefaulttimeout(10)
 lastgpstime = 0
@@ -60,6 +63,65 @@ frontThreshold = 15
 rearThreshold = 15
 leftThreshold = 15
 rightThreshold = 15
+
+# Lighting
+# Choose an open pin connected to the Data In of the NeoPixel strip, i.e. board.D18
+# NeoPixels must be connected to D10, D12, D18 or D21 to work.
+pixel_pin = board.D18
+
+# The number of NeoPixels
+num_pixels = 270
+
+# The order of the pixel colors - RGB or GRB. Some NeoPixels have red and green reversed!
+# For RGBW NeoPixels, simply change the ORDER to RGBW or GRBW.
+ORDER = neopixel.GRB
+
+# colours
+ORANGE = (255,140,0)
+
+pixels = neopixel.NeoPixel(
+	pixel_pin, num_pixels, brightness=0.2, auto_write=False, pixel_order=ORDER
+)
+
+global braking
+braking = False
+
+global hazards
+hazards = False
+
+global leftIndicate
+leftIndicate = False
+
+global rightIndicate
+rightIndicate = False
+
+global headlights
+headlights = False
+
+global idleAnimation
+idleAnimation = False
+
+# Pixel Positions
+# Indicators
+Left_Front_Indicate_Start = 36
+Left_Front_Indicate_End = 44
+
+Right_Front_Indicate_Start = 0
+Right_Front_Indicate_End = 7
+
+Right_Rear_Indicate_Start = Left_Front_Indicate_End + 1
+Right_Read_Indicate_End = 64
+
+Left_Rear_Indicate_Start = Right_Read_Indicate_End + 1
+Left_Rear_Indicate_End = 83
+
+# Underglow
+Underglow_Start = Left_Rear_Indicate_End + 1
+Underglow_End = num_pixels
+
+# headlight
+Front_Headlight_Start = 8
+Front_Headlight_End = 35
 
 #load the JSON geofencing data
 with open('geo.json') as f:
@@ -192,6 +254,7 @@ def main():
 	loop.create_task(telemetry()) #add background task
 	loop.create_task(timeoutstop()) #add background task
 	loop.create_task(bodyControl())
+	loop.create_task(lightingControl())
 
 	web.run_app(app, port=9876, ssl_context=ssl_context, loop=loop) #run sio in the loop
 
@@ -229,6 +292,29 @@ async def bodyControl():
 
 				if "BUMP" not in bodyControlData and "SONAR" not in bodyControlData: # neither Bump or SONAR so we'll treat this as GPS data
 					handleGps(bodyControlData)
+
+async def lightingControl():
+	indicate_right()
+	indicate_left()
+
+async def indicate_right():
+	while True:
+		sweep_fill_range(pixels, ORANGE, Right_Front_Indicate_Start, Right_Front_Indicate_End, True)
+		time.sleep(0.5)
+		pixels.fill((255, 255, 255))
+ 
+async def indicate_left():
+	while True:
+		sweep_fill_range(pixels, ORANGE, Left_Front_Indicate_Start, Left_Front_Indicate_End)
+		time.sleep(0.5)
+		pixels.fill((255, 255, 255))
+
+def sweep_fill_range(neo,color=(255,0,0),start=0,end=7,reversedir=False,delay=0.05):
+	if reversedir:
+		for n in reversed(range(start,end+1)):
+			neo[n]=color
+			neo.show()
+			time.sleep(delay)
 
 def handleGps(nmeaGpsString):	
 	global lastgpstime
