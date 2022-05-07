@@ -2,20 +2,22 @@
 
 - ✨low quality ✨setup instructions
 
-
 ## raspi-config
 
 ```sh
-raspi-config
+sudo raspi-config
 ```
 
 - enable CSI camera port
 - enable ssh
 - enable vnc
+- enable i2c
 - disable serial shell
 - join wifi
 - enable composite output
 - set vnc res to 720x480
+
+- Reboot YES
 
 ## for lite OS only, install missing stuff:
 ```sh
@@ -27,10 +29,10 @@ python3 -m pip install pyserial
 
 ## get code
 ```sh
-git clone https://creds@github.com/chrisstubbs93/roamerpi.git
+git clone https://[INSERT CREDS]@github.com/chrisstubbs93/roamerpi.git
 cd roamerpi/
 cp pull.sh.template pull.sh
-nano pull.sh (insert creds)
+sudo nano pull.sh (insert creds)
 ```
 
 ## set permissions
@@ -39,14 +41,42 @@ chmod 755 permissions.sh
 ./permissions.sh
 ```
 
+## Neopixel setup shiz
+At this time, Blinka requires Python version 3.7 or later, which means you will need to at least be running Raspberry Pi OS Bullseye.
+```
+sudo apt-get update
+sudo apt-get upgrade
+
+sudo pip3 install --upgrade setuptools
+sudo pip3 install --upgrade adafruit-python-shell
+
+cd leds
+sudo python3 raspi-blinka.py
+Reboot: Y
+
+sudo pip3 install rpi_ws281x adafruit-circuitpython-neopixel
+
+```
+To stop audio PWM clashing with neopixel create a file /etc/modprobe.d/snd-blacklist.conf with:
+```
+sudo nano /etc/modprobe.d/snd-blacklist.conf
+```
+add the following:
+```
+blacklist snd_bcm2835
+```
+
+```
+sudo reboot
+```
 
 ## install python libs
 Needs python >3.7 probably
 ```sh
-python3 -m pip install python-socketio
-python3 -m pip install aiohttp
-pip install git+https://github.com/inmcm/micropyGPS.git
-pip install shapely
+sudo python3 -m pip install --upgrade --force-reinstall python-socketio
+sudo python3 -m pip install --upgrade --force-reinstall aiohttp
+sudo python3 -m pip install --upgrade --force-reinstall git+https://github.com/inmcm/micropyGPS.git
+sudo python3 -m pip install --upgrade --force-reinstall shapely
 sudo apt-get install libgeos-dev
 ```
 
@@ -56,7 +86,7 @@ sudo apt-get install libgeos-dev
 cd
 mkdir dynudns
 cd dynudns
-nano dynu.sh
+sudo nano dynu.sh
 ```
 put this in dynu.sh:
 ```sh
@@ -64,12 +94,13 @@ echo url="https://api.dynu.com/nic/update?username=domlinson&password=creds" | c
 ```
 
 ```sh
-chmod 700 dynu.sh
+sudo chmod 700 dynu.sh
 ```
 
 ## cron
 ```sh
 crontab -e
+choose 1 - nano
 ```
 bang this in:
 ```sh
@@ -91,7 +122,11 @@ sudo chown pi -R /etc/letsencrypt/
 
 
 ## disable bt for serial
-Edit the file /boot/config.txt and add the following line at the end of it.
+Edit the file /boot/config.txt.
+```sh
+sudo nano /boot/config.txt
+```
+Add this to the end:
 ```sh
 dtoverlay=pi3-disable-bt
 ```
@@ -99,30 +134,6 @@ Disable HCIUart service and reboot
 ```sh
 sudo systemctl disable hciuart.service
 sudo reboot
-```
-I also disabled the bt service on the pi zero w but I don't think it was requred?
-```sh
-systemctl disable bluetooth.service
-```
-
-## Neopixel setup shiz
-At this time, Blinka requires Python version 3.7 or later, which means you will need to at least be running Raspberry Pi OS Bullseye.
-```
-sudo apt-get update
-sudo apt-get upgrade
-sudo apt-get install python3-pip
-sudo pip3 install --upgrade setuptools
-
-sudo pip3 install --upgrade adafruit-python-shell
-wget https://raw.githubusercontent.com/adafruit/Raspberry-Pi-Installer-Scripts/master/raspi-blinka.py
-sudo python3 raspi-blinka.py
-
-sudo pip3 install rpi_ws281x adafruit-circuitpython-neopixel
-sudo python3 -m pip install --force-reinstall adafruit-blinka
-```
-To stop audio PWM clashing with neopixel create a file /etc/modprobe.d/snd-blacklist.conf with:
-```
-blacklist snd_bcm2835
 ```
 
 ## Wifi (TP Link Archer T4U plus v3)

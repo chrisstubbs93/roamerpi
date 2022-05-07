@@ -254,7 +254,9 @@ def main():
 	loop.create_task(telemetry()) #add background task
 	loop.create_task(timeoutstop()) #add background task
 	loop.create_task(bodyControl())
-	loop.create_task(lightingControl())
+	
+	loop.create_task(indicate_right())
+	loop.create_task(indicate_left())
 
 	web.run_app(app, port=9876, ssl_context=ssl_context, loop=loop) #run sio in the loop
 
