@@ -78,6 +78,7 @@ ORDER = neopixel.GRB
 
 # colours
 ORANGE = (255,140,0)
+WHITE = (255, 255, 255)
 
 pixels = neopixel.NeoPixel(
 	pixel_pin, num_pixels, brightness=0.2, auto_write=False, pixel_order=ORDER
@@ -304,14 +305,14 @@ async def indicate_right():
 		await sweep_fill_range(pixels, ORANGE, Right_Front_Indicate_Start, Right_Front_Indicate_End, True)
 		await asyncio.sleep(0.5)
 		for n in reversed(range(Right_Front_Indicate_Start,Right_Front_Indicate_End+1)):
-			pixels[n].fill((255, 255, 255))
+			pixels[n] = WHITE
  
 async def indicate_left():
 	while True:
 		await sweep_fill_range(pixels, ORANGE, Left_Front_Indicate_Start, Left_Front_Indicate_End)
 		await asyncio.sleep(0.5)
 		for n in range(Left_Front_Indicate_Start,Left_Front_Indicate_End+1):
-			pixels[n].fill((255, 255, 255))
+			pixels[n] = WHITE
 
 async def sweep_fill_range(neo,color=(255,0,0),start=0,end=7,reversedir=False,delay=0.05):
     if reversedir:
