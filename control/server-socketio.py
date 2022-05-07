@@ -455,14 +455,14 @@ async def handleBump(bumpString):
 		if angle == 0 and state == 1:
 			frontBumped = True
 			print("Front bump ON")
-		else:
+		elif angle == 0 and state == 0:
 			frontBumped = False
 			print("Front bump OFF")
 
 		if angle == 180 and state == 1:
 			rearBumped = True
 			print("Rear bump ON")
-		else:
+		elif angle == 180 and state == 0:
 			rearBumped = False
 			print("Rear bump OFF")
 
