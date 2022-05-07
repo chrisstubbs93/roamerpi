@@ -31,6 +31,9 @@ privkeylocation = '/etc/letsencrypt/live/bigclamps.loseyourip.com/privkey.pem'
 global portbusy
 portbusy = False
 
+global lastSerialSendMs
+lastSerialSendMs = 0
+
 lasttime = 0
 fourwd = False
 
@@ -257,6 +260,9 @@ def SendAndResetTimeout(steer,speed):
 	lasttime = int(time.time())
 
 def stp():
+	global lastSerialSendMs
+	print("ms since last serial: " + str(current_milli_time-lastSerialSendMs))
+	lastSerialSendMs = current_milli_time()
 	sendcmd(0,0)
 
 ## create a new Async Socket IO Server
@@ -515,6 +521,9 @@ def nmeaChecksum(sentence):
 		calc_cksum ^= ord(s)
 
 	return nmeadata,('0x'+cksum).lower(),'0x'+"{:02x}".format(calc_cksum).lower()
+
+def current_milli_time():
+	return round(time.time_ns() / 1000)
 
 async def timeoutstop():
 	while True:
