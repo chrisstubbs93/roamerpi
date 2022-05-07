@@ -261,7 +261,7 @@ def SendAndResetTimeout(steer,speed):
 
 def stp():
 	global lastSerialSendMs
-	print("ms since last serial: " + str(current_milli_time-lastSerialSendMs))
+	print("ms since last serial: " + str(current_milli_time()-lastSerialSendMs))
 	lastSerialSendMs = current_milli_time()
 	sendcmd(0,0)
 
