@@ -514,6 +514,8 @@ async def handle_control(sid, control):
 @sio.on('analog')
 async def handle_analog(sid, control):
 	print("ANALOG msg from: " , sid)
+	print("steer: " + int(control.split(',')[0]))
+	print("speed: " + int(control.split(',')[1]))
 	SendAndResetTimeout(int(control.split(',')[0]),int(control.split(',')[1]))
 
 @sio.on('haltmotoroverride')
