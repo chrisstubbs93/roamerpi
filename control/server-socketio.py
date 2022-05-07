@@ -225,11 +225,11 @@ def sendcmd(steerin,speed):
 	if Steeringdetected:
 		steerin = steerin * -1 #because it's backwards
 		if steerin < -20:
-			rightIndicate = False
-			leftIndicate = True
-		elif steerin > 20:
 			rightIndicate = True
 			leftIndicate = False
+		elif steerin > 20:
+			rightIndicate = False
+			leftIndicate = True
 		else:
 			rightIndicate = False
 			leftIndicate = False
@@ -432,11 +432,13 @@ async def handleSonar(sonarString):
 			angle,distance = pair.split(":")
 
 			if angle == 0 and distance < frontThreshold:
+				print("Front prox breach detected")
 				frontProxBreach = True
 			else:
 				frontProxBreach = False
 
 			if angle == 180 and distance < rearThreshold:
+				print("Rear prox breach detected")
 				rearProxBreach = True
 			else:
 				rearProxBreach = False
@@ -461,11 +463,13 @@ async def handleBump(bumpString):
 
 		if angle == 0 and state == 1:
 			frontBumped = True
+			print("Front bump detected")
 		else:
 			frontBumped = False
 
 		if angle == 180 and state == 1:
 			rearBumped = True
+			print("Rear bump detected")
 		else:
 			rearBumped = False
 
