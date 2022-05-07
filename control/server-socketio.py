@@ -298,7 +298,7 @@ async def bodyControl():
 
 async def indicatorControl():
 	while True:
-		for n in reversed(range(0, 8)):
+		for n in reversed(range(0, 9)):
 			pixels[n]=ORANGE		
 			pixels[Left_Front_Indicate_End - n]=ORANGE
 			pixels.show()
