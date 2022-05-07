@@ -452,7 +452,7 @@ async def handleGps(nmeaGpsString):
 				async with aiohttp.ClientSession() as session:
 					async with session.get(geturl) as resp:
 						response = await resp.json()
-						print(str(response))
+						#print(str(response))
 
 				print("shit posted")
 				print("")
