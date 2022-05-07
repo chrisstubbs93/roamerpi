@@ -454,16 +454,17 @@ async def handleBump(bumpString):
 
 		if angle == 0 and state == 1:
 			frontBumped = True
-			print("Front bump detected")
+			print("Front bump ON")
 		else:
 			frontBumped = False
-			print("Front bump disabled")
+			print("Front bump OFF")
 
 		if angle == 180 and state == 1:
 			rearBumped = True
-			print("Rear bump detected")
+			print("Rear bump ON")
 		else:
 			rearBumped = False
+			print("Rear bump OFF")
 
 		if bumpToSend:
 			await sio.emit('bump', bumpToSend)
