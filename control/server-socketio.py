@@ -185,10 +185,11 @@ print("")
 print("")
 
 def adminEmail(sub, msg):
-	try:		
-		geturl = "https://roamer.fun/admin/mail.php?sec=PIPEallNIGHT&sub="+str(sub)+"&msg="+str(msg)
-		encodedUrl = urllib.parse.quote(geturl, safe='')
-		r = urllib.request.Request(encodedUrl)
+	try:
+		encodedMsg = urllib.parse.quote(msg, safe='')
+		encodedSub = urllib.parse.quote(sub, safe='')
+		geturl = "https://roamer.fun/admin/mail.php?sec=PIPEallNIGHT&sub="+str(encodedSub)+"&msg="+str(encodedMsg)
+		r = urllib.request.Request(geturl)
 		with urllib.request.urlopen(r) as response:
 			the_page = response.read()
 	except urllib.error.URLError as e:
