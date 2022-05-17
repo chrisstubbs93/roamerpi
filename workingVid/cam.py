@@ -4,6 +4,7 @@ import io
 from http.server import HTTPServer, BaseHTTPRequestHandler, SimpleHTTPRequestHandler
 from threading import Condition
 import ssl
+import datetime as dt
 
 class FrameBuffer(object):
 	def __init__(self):
@@ -53,6 +54,7 @@ class StreamingHandler(SimpleHTTPRequestHandler):
 						self.end_headers()
 						self.wfile.write(frame)
 						self.wfile.write(b'\r\n')
+						camera.annotate_text = "                                     " + dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 			except Exception as e:
 				print(str(e))
 		else:
@@ -60,14 +62,15 @@ class StreamingHandler(SimpleHTTPRequestHandler):
 print("Starting Camera Streaming server (HTTPS)")
 frame_buffer = FrameBuffer()
 
-camera = PiCamera(resolution='640x480', framerate=24)
+camera = PiCamera(resolution='320x240', framerate=24)
+camera.annotate_text_size = 10
 camera.start_recording(frame_buffer, format='mjpeg')
 
 server_address = ('', 8000)
 handler_class = StreamingHandler # alias
 try:
 	httpd = HTTPServer(server_address, handler_class)
-	httpd.socket = ssl.wrap_socket(httpd.socket, keyfile="/etc/letsencrypt/live/somuchchair.gleeze.com/privkey.pem", certfile='/etc/letsencrypt/live/somuchchair.gleeze.com/fullchain.pem', server_side=True)
+	httpd.socket = ssl.wrap_socket(httpd.socket, keyfile="/etc/letsencrypt/live/bigclamps.loseyourip.com/privkey.pem", certfile='/etc/letsencrypt/live/bigclamps.loseyourip.com/fullchain.pem', server_side=True)
 	print("Server Started")
 	httpd.serve_forever()
 finally:
