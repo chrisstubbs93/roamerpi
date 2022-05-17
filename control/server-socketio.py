@@ -1,6 +1,7 @@
 from contextlib import nullcontext
 import serial, struct, time, numpy # for hoverboard comms
 import urllib.request
+import urllib.parse
 from aiohttp import web
 import socketio, ssl, asyncio, logging
 import re
@@ -183,9 +184,10 @@ print(detectionSummary)
 print("")
 print("")
 
-def adminEmail(sub,msg):
+def adminEmail(sub, msg):
 	try:
-		geturl = "https://roamer.fun/admin/mail.php?sec=PIPEallNIGHT&sub="+str(sub)+"&msg="+str(msg)
+		encodedMsg = urllib.parse.quote(msg, safe='')
+		geturl = "https://roamer.fun/admin/mail.php?sec=PIPEallNIGHT&sub="+str(sub)+"&msg="+str(encodedMsg)
 		r = urllib.request.Request(geturl)
 		with urllib.request.urlopen(r) as response:
 			the_page = response.read()
