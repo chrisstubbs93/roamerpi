@@ -8,7 +8,7 @@
 sudo raspi-config
 ```
 
-- enable CSI camera port
+- enable legacy camera support
 - enable ssh
 - enable vnc
 - enable i2c
@@ -16,6 +16,7 @@ sudo raspi-config
 - join wifi
 - enable composite output
 - set vnc res to 720x480
+- in Display Options - disable Screen Blanking
 
 - Reboot YES
 
