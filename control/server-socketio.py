@@ -177,11 +177,20 @@ try:
 except Exception as e:
 	print("Port auto-detection failed.")
 
-detectionSummary = "NavSpark detected: " + str(NavsparkDetected) + "/r/nSteering detected: " + str(Steeringdetected) + "/r/nHoverboard #2 detected: " + str(fourwd) + "/r/n"
+detectionSummary = "NavSpark detected: " + str(NavsparkDetected) + "\nSteering detected: " + str(Steeringdetected) + "\nHoverboard #2 detected: " + str(fourwd) + "\n"
 print("PORT DETECTION SUMMARY:")
 print(detectionSummary)
 print("")
 print("")
+
+def adminEmail(sub,msg):
+	try:
+		geturl = "https://roamer.fun/admin/mail.php?sec=PIPEallNIGHT&sub="+str(sub)+"&msg="+str(msg)
+		r = urllib.request.Request(geturl)
+		with urllib.request.urlopen(r) as response:
+			the_page = response.read()
+	except urllib.error.URLError as e:
+		print(e.reason)  
 
 if NavsparkDetected and Steeringdetected and fourwd:
 	adminEmail("Roamer control started", detectionSummary)
@@ -603,16 +612,7 @@ def uploadTelemetry():
 		geturl = "http://roamer.chris-stubbs.co.uk/telemetry/uploadtelemetry.php?iSpeedL="+str(iSpeedL)+"&iSpeedR="+str(iSpeedR)+"&iTemp="+str(iTemp)+"&iVolt="+str(iVolt)+"&iAmpL="+str(iAmpL)+"&iAmpR="+str(iAmpR)
 		r = urllib.request.Request(geturl)
 		with urllib.request.urlopen(r) as response:
- 			the_page = response.read()
-	except urllib.error.URLError as e:
-		print(e.reason)  
-
-def adminEmail(sub,msg):
-	try:
-		geturl = "https://roamer.fun/admin/mail.php?sec=PIPEallNIGHT&sub="+str(sub)+"&msg="+str(msg)
-		r = urllib.request.Request(geturl)
-		with urllib.request.urlopen(r) as response:
- 			the_page = response.read()
+			the_page = response.read()
 	except urllib.error.URLError as e:
 		print(e.reason)  
 
