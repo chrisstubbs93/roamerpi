@@ -156,6 +156,15 @@ sudo raspi-config
 #reboot again
 ```
 
+## disable built in wifi
+Edit the file /boot/config.txt.
+```sh
+sudo nano /boot/config.txt
+```
+Add this to the end below dtoverlay=disable-bt:
+```sh
+dtoverlay=disable-wifi
+```
 
 ## The list goes on...
 Disable IPV6?
