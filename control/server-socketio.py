@@ -153,7 +153,7 @@ try:
 			if "USB" in port:
 				print("{}: {} [{}]".format(port, desc, hwid))
 				serialAttempt = serial.Serial(port, 115200, timeout=5)
-				time.sleep(3)	
+				time.sleep(2)	
 				attempts = 0			
 				while attempts < 5:
 					attempts += 1		
@@ -261,7 +261,7 @@ def sendcmd(steerin,speed):
 		ser.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
 		if fourwd:
 			ser2.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
-		time.sleep(0.01)
+		time.sleep(0.02)
 
 
 	#do the arduino steering
