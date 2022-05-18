@@ -560,10 +560,10 @@ def current_milli_time():
 
 async def timeoutstop():
 	while True:
-		await asyncio.sleep(0.5)
+		await asyncio.sleep(0.25)
 		try:
 			global lasttime
-			if (current_milli_time()>=lasttime+1000):
+			if (current_milli_time()>=lasttime+500):
 				print("----Control Timeout!!---- Lasttime:" + str(lasttime) + " Now:" + str(current_milli_time()) + " ----Motors Stopped!!----")
 				stp()
 		except BaseException as error:
