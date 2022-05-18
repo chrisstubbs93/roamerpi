@@ -208,7 +208,7 @@ def sendcmd(steerin,speed):
 	Sends a bytearray for controlling the hoverboard
 	:param steer: -1000...1000	:param speed: -1000...1000	:
 	'''
-	#print("Sendcmd("+str(steerin)+","+str(speed)+")")
+	print("Sendcmd("+str(steerin)+","+str(speed)+")")
 	global haltMotors
 	global haltMotorOverride
 	global frontBumped
