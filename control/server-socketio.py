@@ -261,6 +261,7 @@ def sendcmd(steerin,speed):
 		ser.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
 		if fourwd:
 			ser2.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
+		time.sleep(0.1)
 
 
 	#do the arduino steering
