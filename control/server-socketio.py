@@ -25,7 +25,7 @@ maxrevspeed = 25.0 #max reverse speed
 steerauth = 0.4 #adjust how much 100% steering actually steers (don't do nuffink)
 speedsteercomp = 2.2 #more steering authority at speed. 2.0 = double steering authority at 100% speed (don't do nuffink)
 global StopRetryCount 
-StopRetryCount = 5 #how many times to send the stop signal in case the serial is awful
+StopRetryCount = 1 #how many times to send the stop signal in case the serial is awful
 PortHoverboard1 = '/dev/serial0'
 
 fullchainlocation = '/etc/letsencrypt/live/bigclamps.loseyourip.com/fullchain.pem'
@@ -209,6 +209,14 @@ def sendcmd(steerin,speed):
 	:param steer: -1000...1000	:param speed: -1000...1000	:
 	'''
 	print("Sendcmd("+str(steerin)+","+str(speed)+")")
+
+	global lastSerialSendMs
+	timez = current_milli_time()-lastSerialSendMs
+	print("ms since last serial: " + str(timez))
+	if timez > 700:
+		print("WARNING SOMETHING HAS BEFALLEN ME")
+	lastSerialSendMs = current_milli_time()
+
 	global haltMotors
 	global haltMotorOverride
 	global frontBumped
@@ -288,13 +296,6 @@ def SendAndResetTimeout(steer,speed):
 	lasttime = int(time.time())
 
 def stp():
-	global lastSerialSendMs
-	timez = current_milli_time()-lastSerialSendMs
-	print("ms since last serial: " + str(timez))
-	if timez > 700:
-		print("WARNING SOMETHING HAS BEFALLEN ME")
-
-	lastSerialSendMs = current_milli_time()
 	sendcmd(0,0)
 
 ## create a new Async Socket IO Server
