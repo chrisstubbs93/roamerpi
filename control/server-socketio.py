@@ -24,6 +24,7 @@ maxfwdspeed = 50.0 #max fwd speed
 maxrevspeed = 25.0 #max reverse speed
 steerauth = 0.4 #adjust how much 100% steering actually steers (don't do nuffink)
 speedsteercomp = 2.2 #more steering authority at speed. 2.0 = double steering authority at 100% speed (don't do nuffink)
+StopRetryCount = 3 #how many times to send the stop signal in case the serial is awful
 PortHoverboard1 = '/dev/serial0'
 
 fullchainlocation = '/etc/letsencrypt/live/bigclamps.loseyourip.com/fullchain.pem'
@@ -238,6 +239,7 @@ def sendcmd(steerin,speed):
 		if rearProxBreach == True and haltMotorOverride == False and speed < 0: # the rear bump stop is pushed, set speed to 0 if they're trying to go in reverse. otherwise let it go forward
 			speed = 0
 
+	#calculate packet
 	portbusy = True
 	startB = bytes.fromhex('ABCD')[::-1] # lower byte first
 	steerB = struct.pack('h', steer)
@@ -245,9 +247,16 @@ def sendcmd(steerin,speed):
 	brakeB = struct.pack('h', 0) #don't bother with braking in speed mode
 	driveModeB = struct.pack('h', 2) #2=speed, 3=torque
 	crcB = bytes(a^b^c^d^e for (a, b, c, d, e) in zip(startB, steerB, speedB, brakeB, driveModeB))
-	ser.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
-	if fourwd:
-		ser2.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
+
+	#send it
+	if speed == 0:
+		SerialSendRetries = StopRetryCount
+	else:
+		SerialSendRetries = 1
+	for x in range(SerialSendRetries):
+		ser.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
+		if fourwd:
+			ser2.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
 
 
 	#do the arduino steering
@@ -281,7 +290,8 @@ def stp():
 		print("WARNING SOMETHING HAS BEFALLEN ME")
 
 	lastSerialSendMs = current_milli_time()
-	sendcmd(0,0)
+	for x in range(StopRetryCount):
+		sendcmd(0,0)
 
 ## create a new Async Socket IO Server
 sio = socketio.AsyncServer(cors_allowed_origins='*')
