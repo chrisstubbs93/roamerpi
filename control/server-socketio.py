@@ -25,7 +25,7 @@ maxrevspeed = 25.0 #max reverse speed
 steerauth = 0.4 #adjust how much 100% steering actually steers (don't do nuffink)
 speedsteercomp = 2.2 #more steering authority at speed. 2.0 = double steering authority at 100% speed (don't do nuffink)
 global StopRetryCount 
-StopRetryCount = 3 #how many times to send the stop signal in case the serial is awful
+StopRetryCount = 10 #how many times to send the stop signal in case the serial is awful
 PortHoverboard1 = '/dev/serial0'
 
 fullchainlocation = '/etc/letsencrypt/live/bigclamps.loseyourip.com/fullchain.pem'
@@ -255,14 +255,11 @@ def sendcmd(steerin,speed):
 		SerialSendRetries = StopRetryCount
 	else:
 		SerialSendRetries = 1
-	print("Sending " + str(SerialSendRetries) + " times")
 	for cnt in range(SerialSendRetries):
-		print("Send " + str(cnt))
-		print(''.join(format(x, '02x') for x in (startB+steerB+speedB+brakeB+driveModeB+crcB)))
 		ser.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
 		if fourwd:
 			ser2.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
-		time.sleep(0.02)
+		time.sleep(0.01)
 
 
 	#do the arduino steering
