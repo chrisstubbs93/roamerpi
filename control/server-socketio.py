@@ -258,7 +258,7 @@ def sendcmd(steerin,speed):
 	print("Sending " + str(SerialSendRetries) + " times")
 	for cnt in range(SerialSendRetries):
 		print("Send " + str(cnt))
-		print(hex(startB+steerB+speedB+brakeB+driveModeB+crcB))
+		print(str(hex(startB+steerB+speedB+brakeB+driveModeB+crcB)))
 		ser.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
 		if fourwd:
 			ser2.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
