@@ -156,9 +156,9 @@ try:
 				time.sleep(2)	
 				attempts = 0			
 				while attempts < 5:
-					attempts += 1		
-					detection = serialAttempt.read_all()
 					try:
+						attempts += 1		
+						detection = serialAttempt.read_all()
 						if detection[0] == 205 and detection[1] == 171 and fourwd == False:
 							fourwd = True
 							ser2 = serialAttempt
