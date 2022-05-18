@@ -208,7 +208,7 @@ def sendcmd(steerin,speed):
 	Sends a bytearray for controlling the hoverboard
 	:param steer: -1000...1000	:param speed: -1000...1000	:
 	'''
-	print("Sendcmd("+str(steerin)+","+str(speed)+")")
+	#print("Sendcmd("+str(steerin)+","+str(speed)+")")
 	global haltMotors
 	global haltMotorOverride
 	global frontBumped
@@ -257,7 +257,7 @@ def sendcmd(steerin,speed):
 	else:
 		SerialSendRetries = 1
 	for cnt in range(SerialSendRetries):
-		print(''.join(format(x, '02x') for x in (startB+steerB+speedB+brakeB+driveModeB+crcB)))
+		#print(''.join(format(x, '02x') for x in (startB+steerB+speedB+brakeB+driveModeB+crcB)))
 		ser.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
 		if fourwd:
 			ser2.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
