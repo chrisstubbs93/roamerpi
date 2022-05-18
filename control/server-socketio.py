@@ -210,13 +210,6 @@ def sendcmd(steerin,speed):
 	'''
 	print("Sendcmd("+str(steerin)+","+str(speed)+")")
 
-	global lastSerialSendMs
-	timez = current_milli_time()-lastSerialSendMs
-	print("ms since last serial: " + str(timez))
-	if timez > 700:
-		print("WARNING SOMETHING HAS BEFALLEN ME")
-	lastSerialSendMs = current_milli_time()
-
 	global haltMotors
 	global haltMotorOverride
 	global frontBumped
@@ -288,6 +281,13 @@ def sendcmd(steerin,speed):
 			steerin = 0
 		serSteering.write((str(numpy.clip(100,-100,steerin))+"\n").encode('utf_8')) #old mode
 	portbusy = False
+
+	global lastSerialSendMs
+	timez = current_milli_time()-lastSerialSendMs
+	print("ms since last serial: " + str(timez))
+	if timez > 700:
+		print("WARNING SOMETHING HAS BEFALLEN ME")
+	lastSerialSendMs = current_milli_time()
 
 
 def SendAndResetTimeout(steer,speed):
