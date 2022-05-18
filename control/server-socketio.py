@@ -24,6 +24,7 @@ maxfwdspeed = 50.0 #max fwd speed
 maxrevspeed = 25.0 #max reverse speed
 steerauth = 0.4 #adjust how much 100% steering actually steers (don't do nuffink)
 speedsteercomp = 2.2 #more steering authority at speed. 2.0 = double steering authority at 100% speed (don't do nuffink)
+global StopRetryCount 
 StopRetryCount = 3 #how many times to send the stop signal in case the serial is awful
 PortHoverboard1 = '/dev/serial0'
 
@@ -215,6 +216,7 @@ def sendcmd(steerin,speed):
 	global rearProxBreach
 	global leftIndicate
 	global rightIndicate
+	global StopRetryCount
 
 	if speed > 0:
 		speed = int((numpy.clip(100,-100,speed)/100.0)*maxfwdspeed)
