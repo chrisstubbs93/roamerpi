@@ -293,7 +293,7 @@ def sendcmd(steerin,speed):
 def SendAndResetTimeout(steer,speed):
 	sendcmd(steer,speed)
 	global lasttime
-	lasttime = int(time.time())
+	lasttime = current_milli_time()
 
 def stp():
 	sendcmd(0,0)
@@ -563,8 +563,8 @@ async def timeoutstop():
 		await asyncio.sleep(0.5)
 		try:
 			global lasttime
-			if (int(time.time())>=int(lasttime+2)):
-				print("----Control Timeout!!---- Lasttime:" + str(lasttime) + " Now:" + str(int(time.time())) + " ----Motors Stopped!!----")
+			if (current_milli_time()>=current_milli_time()+1000):
+				print("----Control Timeout!!---- Lasttime:" + str(lasttime) + " Now:" + str(current_milli_time()) + " ----Motors Stopped!!----")
 				stp()
 		except BaseException as error:
 			print('An exception occurred in timeoutstop: {}'.format(error))
