@@ -255,7 +255,9 @@ def sendcmd(steerin,speed):
 		SerialSendRetries = StopRetryCount
 	else:
 		SerialSendRetries = 1
-	for x in range(SerialSendRetries):
+	print("Sending " + str(SerialSendRetries) + " times")
+	for cnt in range(SerialSendRetries):
+		print("Send " + str(cnt))
 		ser.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
 		if fourwd:
 			ser2.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
@@ -292,8 +294,7 @@ def stp():
 		print("WARNING SOMETHING HAS BEFALLEN ME")
 
 	lastSerialSendMs = current_milli_time()
-	for x in range(StopRetryCount):
-		sendcmd(0,0)
+	sendcmd(0,0)
 
 ## create a new Async Socket IO Server
 sio = socketio.AsyncServer(cors_allowed_origins='*')
