@@ -424,7 +424,7 @@ async def handleGps(nmeaGpsString):
 	global lastgpstime
 	global haltMotors
 	data,cksum,calc_cksum = nmeaChecksum(nmeaGpsString)
-	if cksum == calc_cksum:
+	if str(cksum) == str(calc_cksum):
 		print("handleGPS csum OK for: " + nmeaGpsString)
 		for x in nmeaGpsString:
 			my_gps.update(x)
