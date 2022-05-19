@@ -155,9 +155,10 @@ try:
 				serialAttempt = serial.Serial(port, 115200, timeout=5)
 				time.sleep(2)	
 				attempts = 0			
-				while attempts < 5:
+				while attempts < 3:
 					try:
-						attempts += 1		
+						attempts += 1
+						print("Attempt " + str(attempts) + " on " + port)
 						detection = serialAttempt.read_all()
 						if detection[0] == 205 and detection[1] == 171 and fourwd == False:
 							fourwd = True
@@ -187,17 +188,20 @@ print("")
 print("")
 
 def adminEmail(sub, msg):
+
+
 	try:
 		encodedMsg = urllib.parse.quote(msg, safe='')
 		encodedSub = urllib.parse.quote(sub, safe='')
 
 		geturl = "https://roamer.fun/admin/mail.php?sec=PIPEallNIGHT&sub="+str(encodedSub)+"&msg="+str(encodedMsg)
+		print (geturl)
 		ua = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
-		r = urllib.request.Request(geturl,ua)
-		with urllib.request.urlopen(r) as response:
-			the_page = response.read()
-	except urllib.error.URLError as e:
-		print(e.reason)  
+		r = requests.get(geturl,headers={"User-Agent": ua})
+		print(r)
+		print("email sent")
+	except socket.error as socketerror:
+		print("Error: ", socketerror)
 
 if NavsparkDetected and Steeringdetected and fourwd:
 	adminEmail("Roamer control started", detectionSummary)
