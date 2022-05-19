@@ -486,7 +486,7 @@ async def handleGps(nmeaGpsString):
 				print("Error: ", socketerror)
 	else:
 		print("Error in checksum for GPS data: %s" % (data))
-		print("Checksum is:" + cksum + " expected " + calc_cksum)
+		print("Checksum is:" + str(hex(cksum)) + " expected " + str(hex(calc_cksum)))
 		#print("Checksums are %s and %s" % (cksum,calc_cksum))
 		print("Type of cksum:", type(cksum))
 		print("Type of calc_cksum:", type(calc_cksum))
