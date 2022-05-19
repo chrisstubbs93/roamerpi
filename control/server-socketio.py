@@ -190,8 +190,10 @@ def adminEmail(sub, msg):
 	try:
 		encodedMsg = urllib.parse.quote(msg, safe='')
 		encodedSub = urllib.parse.quote(sub, safe='')
+
 		geturl = "https://roamer.fun/admin/mail.php?sec=PIPEallNIGHT&sub="+str(encodedSub)+"&msg="+str(encodedMsg)
-		r = urllib.request.Request(geturl)
+		ua = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
+		r = urllib.request.Request(geturl,ua)
 		with urllib.request.urlopen(r) as response:
 			the_page = response.read()
 	except urllib.error.URLError as e:
