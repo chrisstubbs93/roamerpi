@@ -188,8 +188,6 @@ print("")
 print("")
 
 def adminEmail(sub, msg):
-
-
 	try:
 		encodedMsg = urllib.parse.quote(msg, safe='')
 		encodedSub = urllib.parse.quote(sub, safe='')
