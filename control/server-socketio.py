@@ -423,12 +423,10 @@ async def handleGps(nmeaGpsString):
 	global lastgpstime
 	global haltMotors
 	data,cksum,calc_cksum = nmeaChecksum(nmeaGpsString)
-	print("handleGPS " + nmeaGpsString)
 	if cksum == calc_cksum:
-		print("GPS Csum ok")
+		print("handleGPS csum OK for: " + nmeaGpsString)
 		for x in nmeaGpsString:
 			my_gps.update(x)
-			print("updating")
 		if (lastgpstime + 30) < time.time():
 			lastgpstime = time.time()
 			#process the NMEA coords to decimal
