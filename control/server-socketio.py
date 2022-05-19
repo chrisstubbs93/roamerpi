@@ -354,7 +354,7 @@ async def bodyControl():
 
 				if "BUMP" not in bodyControlData and "SONAR" not in bodyControlData: # neither Bump or SONAR so we'll treat this as GPS data
 					print("About to handle: " + rawNavSparkData)
-					await handleGps(rawNavSparkData.decode('utf-8')) #send raw NMEA to GPS parser
+					await handleGps(str(rawNavSparkData.decode('utf-8'))) #send raw NMEA to GPS parser
 
 async def lightingControl():
 	global leftIndicate
