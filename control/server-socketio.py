@@ -487,6 +487,8 @@ async def handleGps(nmeaGpsString):
 	else:
 		print("Error in checksum for GPS data: %s" % (data))
 		print("Checksums are %s and %s" % (cksum,calc_cksum))
+		print("Type of cksum:" + type(cksum))
+		print("Type of calc_cksum:" + type(calc_cksum))
 
 async def handleSonar(sonarString):
 	global frontProxBreach
