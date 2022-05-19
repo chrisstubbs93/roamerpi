@@ -549,6 +549,8 @@ def nmeaChecksum(sentence):
 	if re.search("\n$", sentence):
 		sentence = sentence[:-1]
 
+	sentence = sentence.replace('$', '')
+	
 	nmeadata,cksum = re.split('\*', sentence)
 
 	calc_cksum = 0
