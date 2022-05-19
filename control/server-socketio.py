@@ -208,7 +208,7 @@ def sendcmd(steerin,speed):
 	Sends a bytearray for controlling the hoverboard
 	:param steer: -1000...1000	:param speed: -1000...1000	:
 	'''
-	print("Sendcmd("+str(steerin)+","+str(speed)+")")
+	#print("Sendcmd("+str(steerin)+","+str(speed)+")")
 
 	global haltMotors
 	global haltMotorOverride
@@ -284,9 +284,9 @@ def sendcmd(steerin,speed):
 
 	global lastSerialSendMs
 	timez = current_milli_time()-lastSerialSendMs
-	print("ms since last serial: " + str(timez))
+	#print("ms since last serial: " + str(timez))
 	if timez > 700:
-		print("WARNING SOMETHING HAS BEFALLEN ME")
+		print("WARNING TIME SINCE LAST SERIAL SEND: "+ str(timez))
 	lastSerialSendMs = current_milli_time()
 
 
@@ -567,7 +567,7 @@ async def timeoutstop():
 		try:
 			global lasttime
 			if (current_milli_time()>=lasttime+500):
-				print("----Control Timeout!!---- Lasttime:" + str(lasttime) + " Now:" + str(current_milli_time()) + " ----Motors Stopped!!----")
+				#print("----Control Timeout!!---- Lasttime:" + str(lasttime) + " Now:" + str(current_milli_time()) + " ----Motors Stopped!!----")
 				stp()
 		except BaseException as error:
 			print('An exception occurred in timeoutstop: {}'.format(error))
