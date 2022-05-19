@@ -549,12 +549,12 @@ def nmeaChecksum(sentence):
 	if re.search("\n$", sentence):
 		sentence = sentence[:-1]
 
-	sentence = sentence.replace('$', '')
-	
+	#sentence = sentence.replace('$', '')
+
 	nmeadata,cksum = re.split('\*', sentence)
 
 	calc_cksum = 0
-	for s in nmeadata:
+	for s in nmeadata.replace('$', ''):
 		calc_cksum ^= ord(s)
 
 	return nmeadata,('0x'+cksum).lower(),'0x'+"{:02x}".format(calc_cksum).lower()
