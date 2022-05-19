@@ -353,7 +353,6 @@ async def bodyControl():
 					await handleBump(bodyControlData)
 
 				if "BUMP" not in bodyControlData and "SONAR" not in bodyControlData: # neither Bump or SONAR so we'll treat this as GPS data
-					print("About to handle: " + rawNavSparkData.decode('utf-8'))
 					await handleGps(rawNavSparkData.decode('utf-8')) #send raw NMEA to GPS parser
 
 async def lightingControl():
@@ -425,7 +424,6 @@ async def handleGps(nmeaGpsString):
 	global haltMotors
 	data,cksum,calc_cksum = nmeaChecksum(nmeaGpsString)
 	if int(cksum,16) == int(calc_cksum,16):
-		print("handleGPS csum OK for: " + nmeaGpsString)
 		for x in nmeaGpsString:
 			my_gps.update(x)
 		if (lastgpstime + 30) < time.time():
@@ -487,9 +485,6 @@ async def handleGps(nmeaGpsString):
 	else:
 		print("Error in checksum for GPS data: %s" % (data))
 		print("Checksum is:" + str(hex(int(cksum,16))) + " expected " + str(hex(int(calc_cksum,16))))
-		#print("Checksums are %s and %s" % (cksum,calc_cksum))
-		print("Type of cksum:", type(cksum))
-		print("Type of calc_cksum:", type(calc_cksum))
 
 async def handleSonar(sonarString):
 	global frontProxBreach
