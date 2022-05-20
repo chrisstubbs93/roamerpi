@@ -167,7 +167,7 @@ try:
 							ser2 = serialAttempt
 							print("4WD Mode - 2nd Hoverboard detected on port:" + port)		
 							break		
-						elif "$GPGGA" in str(serialAttempt.readline()).replace("b'", "") and NavsparkDetected == False:
+						elif "$GPGGA" in str(detection.decode('utf-8')) and NavsparkDetected == False:
 							NavsparkDetected = True
 							serNavspark = serialAttempt
 							print("NavSpark detected on port:" + port)	
