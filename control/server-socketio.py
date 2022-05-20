@@ -430,6 +430,7 @@ async def handleGps(nmeaGpsString):
 	global lastgpstime
 	global haltMotors
 	data,cksum,calc_cksum = nmeaChecksum(nmeaGpsString)
+	print("begin handleGPS")
 	if int(cksum,16) == int(calc_cksum,16):
 		for x in nmeaGpsString:
 			my_gps.update(x)
@@ -492,6 +493,12 @@ async def handleGps(nmeaGpsString):
 	else:
 		print("Error in checksum for GPS data: %s" % (data))
 		print("Checksum is:" + str(hex(int(cksum,16))) + " expected " + str(hex(int(calc_cksum,16))))
+	print("End handleGPS")
+	print()
+	print()
+	print()
+	print()
+	
 
 async def handleSonar(sonarString):
 	global frontProxBreach
