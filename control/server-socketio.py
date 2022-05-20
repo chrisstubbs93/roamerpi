@@ -430,7 +430,6 @@ async def handleGps(nmeaGpsString):
 	global lastgpstime
 	global haltMotors
 	data,cksum,calc_cksum = nmeaChecksum(nmeaGpsString)
-	print("begin handleGPS")
 	if int(cksum,16) == int(calc_cksum,16):
 		for x in nmeaGpsString:
 			my_gps.update(x)
@@ -442,7 +441,7 @@ async def handleGps(nmeaGpsString):
 			lng = 0 - lng
 		if my_gps.latitude[2] == "S":
 				lat = 0 - lat
-				
+
 		if (lastgpstime + 30) < time.time():
 			lastgpstime = time.time()
 
@@ -469,9 +468,11 @@ async def handleGps(nmeaGpsString):
 
 		#geofencing
 		point = Point(lng, lat)
+		GeowithinDataset = False
 		for feature in js['features']:
 			polygon = shape(feature['geometry'])
 			if polygon.contains(point):
+				GeowithinDataset = True
 				if feature['properties']['type'] == "keepout":
 					print('GPS is within Restricted zone: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will NOT be able to drive regardless of other conditions')
 					haltMotors = True
@@ -488,19 +489,17 @@ async def handleGps(nmeaGpsString):
 					statusToSend = {"geofenceStatus": "keepin"}
 					sio.emit('geofenceStatus', statusToSend)				
 				else:
+					#i think this is nonsense and should be below, if it's outside of the keepout zone it won't meet "if polygon.contains(point)"
 					print('GPS is out of the keep in zone: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')
 					haltMotors = True
 					statusToSend = {"geofenceStatus": "outOfBounds"}
 					sio.emit('geofenceStatus', statusToSend)
+	if GeowithinDataset == False:
+				print("Point was not within dataset, must assume offiste")
 
 	else:
 		print("Error in checksum for GPS data: %s" % (data))
 		print("Checksum is:" + str(hex(int(cksum,16))) + " expected " + str(hex(int(calc_cksum,16))))
-	print("End handleGPS")
-	print()
-	print()
-	print()
-	print()
 
 
 async def handleSonar(sonarString):
