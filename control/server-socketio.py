@@ -434,15 +434,18 @@ async def handleGps(nmeaGpsString):
 	if int(cksum,16) == int(calc_cksum,16):
 		for x in nmeaGpsString:
 			my_gps.update(x)
+
+		#process the NMEA coords to decimal
+		lat = round(my_gps.latitude[0] + (my_gps.latitude[1]/60),8)
+		lng = round(my_gps.longitude[0] + (my_gps.longitude[1]/60),8)
+		if my_gps.longitude[2] == "W":
+			lng = 0 - lng
+		if my_gps.latitude[2] == "S":
+				lat = 0 - lat
+				
 		if (lastgpstime + 30) < time.time():
 			lastgpstime = time.time()
-			#process the NMEA coords to decimal
-			lat = round(my_gps.latitude[0] + (my_gps.latitude[1]/60),8)
-			lng = round(my_gps.longitude[0] + (my_gps.longitude[1]/60),8)
-			if my_gps.longitude[2] == "W":
-				lng = 0 - lng
-			if my_gps.latitude[2] == "S":
-				lat = 0 - lat
+
 			timestr = str(my_gps.timestamp[0]).zfill(2) + str(my_gps.timestamp[1]).zfill(2) + str(int(my_gps.timestamp[2])).zfill(2)
 			sats = my_gps.satellites_in_use
 			speed = my_gps.speed[2]*1000/60
@@ -453,33 +456,6 @@ async def handleGps(nmeaGpsString):
 			if my_gps.fix_type == 3:
 				fixtype = "3D"
 			print("I can see " + str(my_gps.satellites_in_use) + " satellites. My fix is: " + fixtype + "  My coordinates are: " + str(lat) + "," + str(lng) + " The time is: " + timestr)
-			
-			#geofencing
-			point = Point(lng, lat)
-			for feature in js['features']:
-				polygon = shape(feature['geometry'])
-				if polygon.contains(point):
-					if feature['properties']['type'] == "keepout":
-						print('GPS is within Restricted zone: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will NOT be able to drive regardless of other conditions')
-						haltMotors = True
-						statusToSend = {"geofenceStatus": "keepout"}
-						sio.emit('geofenceStatus', statusToSend)
-					elif feature['properties']['type'] == "warning":
-						print('GPS is in a warning zone: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')
-						haltMotors = False
-						statusToSend = {"geofenceStatus": "warning"}
-						sio.emit('geofenceStatus', statusToSend)
-					elif feature['properties']['type'] == "keepin":
-						print('GPS is within bounds: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')
-						haltMotors = False
-						statusToSend = {"geofenceStatus": "keepin"}
-						sio.emit('geofenceStatus', statusToSend)				
-					else:
-						print('GPS is out of the keep in zone: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')
-						haltMotors = True
-						statusToSend = {"geofenceStatus": "outOfBounds"}
-						sio.emit('geofenceStatus', statusToSend)
-
 			try:
 				print ("posting the shit")
 				geturl = "http://roamer.chris-stubbs.co.uk/gps/uploadgps.php?lat="+str(lat)+"&lng="+str(lng)+"&sats="+str(sats)+"&speed="+str(speed)+"&heading="+str(my_gps.course)+"&fixtype="+fixtype+"&gpstime="+timestr
@@ -490,6 +466,33 @@ async def handleGps(nmeaGpsString):
 				print("shit posted")
 			except socket.error as socketerror:
 				print("Error: ", socketerror)
+
+		#geofencing
+		point = Point(lng, lat)
+		for feature in js['features']:
+			polygon = shape(feature['geometry'])
+			if polygon.contains(point):
+				if feature['properties']['type'] == "keepout":
+					print('GPS is within Restricted zone: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will NOT be able to drive regardless of other conditions')
+					haltMotors = True
+					statusToSend = {"geofenceStatus": "keepout"}
+					sio.emit('geofenceStatus', statusToSend)
+				elif feature['properties']['type'] == "warning":
+					print('GPS is in a warning zone: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')
+					haltMotors = False
+					statusToSend = {"geofenceStatus": "warning"}
+					sio.emit('geofenceStatus', statusToSend)
+				elif feature['properties']['type'] == "keepin":
+					print('GPS is within bounds: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')
+					haltMotors = False
+					statusToSend = {"geofenceStatus": "keepin"}
+					sio.emit('geofenceStatus', statusToSend)				
+				else:
+					print('GPS is out of the keep in zone: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')
+					haltMotors = True
+					statusToSend = {"geofenceStatus": "outOfBounds"}
+					sio.emit('geofenceStatus', statusToSend)
+
 	else:
 		print("Error in checksum for GPS data: %s" % (data))
 		print("Checksum is:" + str(hex(int(cksum,16))) + " expected " + str(hex(int(calc_cksum,16))))
@@ -498,7 +501,7 @@ async def handleGps(nmeaGpsString):
 	print()
 	print()
 	print()
-	
+
 
 async def handleSonar(sonarString):
 	global frontProxBreach
