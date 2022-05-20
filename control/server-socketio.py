@@ -27,6 +27,7 @@ speedsteercomp = 2.2 #more steering authority at speed. 2.0 = double steering au
 global StopRetryCount 
 StopRetryCount = 1 #how many times to send the stop signal in case the serial is awful
 PortHoverboard1 = '/dev/serial0'
+enableAdminEmail = False
 
 fullchainlocation = '/etc/letsencrypt/live/bigclamps.loseyourip.com/fullchain.pem'
 privkeylocation = '/etc/letsencrypt/live/bigclamps.loseyourip.com/privkey.pem'
@@ -188,18 +189,19 @@ print("")
 print("")
 
 def adminEmail(sub, msg):
-	try:
-		encodedMsg = urllib.parse.quote(msg, safe='')
-		encodedSub = urllib.parse.quote(sub, safe='')
+	if enableAdminEmail:
+		try:
+			encodedMsg = urllib.parse.quote(msg, safe='')
+			encodedSub = urllib.parse.quote(sub, safe='')
 
-		geturl = "https://roamer.fun/admin/mail.php?sec=PIPEallNIGHT&sub="+str(encodedSub)+"&msg="+str(encodedMsg)
-		print (geturl)
-		ua = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
-		r = requests.get(geturl,headers={"User-Agent": ua})
-		print(r)
-		print("email sent")
-	except socket.error as socketerror:
-		print("Error: ", socketerror)
+			geturl = "https://roamer.fun/admin/mail.php?sec=PIPEallNIGHT&sub="+str(encodedSub)+"&msg="+str(encodedMsg)
+			print (geturl)
+			ua = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
+			r = requests.get(geturl,headers={"User-Agent": ua})
+			print(r)
+			print("email sent")
+		except socket.error as socketerror:
+			print("Error: ", socketerror)
 
 if NavsparkDetected and Steeringdetected and fourwd:
 	adminEmail("Roamer control started", detectionSummary)
