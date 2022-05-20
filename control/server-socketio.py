@@ -265,7 +265,6 @@ def sendcmd(steerin,speed):
 	else:
 		SerialSendRetries = 1
 	for cnt in range(SerialSendRetries):
-		#print(''.join(format(x, '02x') for x in (startB+steerB+speedB+brakeB+driveModeB+crcB)))
 		ser.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
 		if fourwd:
 			ser2.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
@@ -468,6 +467,7 @@ async def handleGps(nmeaGpsString):
 
 		#geofencing
 		point = Point(lng, lat)
+		haltMotors = False
 		GeowithinDataset = False
 		for feature in js['features']:
 			polygon = shape(feature['geometry'])
@@ -475,28 +475,24 @@ async def handleGps(nmeaGpsString):
 				GeowithinDataset = True
 				if feature['properties']['type'] == "keepout":
 					print('GPS is within Restricted zone: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will NOT be able to drive regardless of other conditions')
-					haltMotors = True
+					haltMotors = haltMotors or True
 					statusToSend = {"geofenceStatus": "keepout"}
 					sio.emit('geofenceStatus', statusToSend)
 				elif feature['properties']['type'] == "warning":
 					print('GPS is in a warning zone: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')
-					haltMotors = False
+					haltMotors = haltMotors or False
 					statusToSend = {"geofenceStatus": "warning"}
 					sio.emit('geofenceStatus', statusToSend)
 				elif feature['properties']['type'] == "keepin":
-					print('GPS is within bounds: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')
-					haltMotors = False
+					#print('GPS is within bounds: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')
+					haltMotors = haltMotors or False
 					statusToSend = {"geofenceStatus": "keepin"}
 					sio.emit('geofenceStatus', statusToSend)				
-				else:
-					#i think this is nonsense and should be below, if it's outside of the keepout zone it won't meet "if polygon.contains(point)"
-					print('GPS is out of the keep in zone: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')
-					haltMotors = True
-					statusToSend = {"geofenceStatus": "outOfBounds"}
-					sio.emit('geofenceStatus', statusToSend)
-	if GeowithinDataset == False:
-				print("Point was not within dataset, must assume offiste")
-
+		if GeowithinDataset == False:
+			print("Point was not within dataset, must assume offiste")
+			haltMotors = haltMotors or True
+			statusToSend = {"geofenceStatus": "outOfBounds"}
+			sio.emit('geofenceStatus', statusToSend)
 	else:
 		print("Error in checksum for GPS data: %s" % (data))
 		print("Checksum is:" + str(hex(int(cksum,16))) + " expected " + str(hex(int(calc_cksum,16))))
