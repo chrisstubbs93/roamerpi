@@ -161,7 +161,6 @@ try:
 						attempts += 1
 						print("Attempt " + str(attempts) + " on " + port)
 						detection = serialAttempt.read_all()
-						print(detection)
 						if detection[0] == 205 and detection[1] == 171 and fourwd == False:
 							fourwd = True
 							ser2 = serialAttempt
