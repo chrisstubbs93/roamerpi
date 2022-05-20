@@ -467,6 +467,7 @@ async def handleGps(nmeaGpsString):
 		#geofencing
 		point = Point(lng, lat)
 		haltMotors = False
+		GeoWarning = False
 		GeowithinDataset = False
 		for feature in js['features']:
 			polygon = shape(feature['geometry'])
@@ -476,22 +477,30 @@ async def handleGps(nmeaGpsString):
 					print('GPS is within Restricted zone: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will NOT be able to drive regardless of other conditions')
 					haltMotors = haltMotors or True
 					statusToSend = {"geofenceStatus": "keepout"}
-					sio.emit('geofenceStatus', statusToSend)
+					#await sio.emit('geofenceStatus', statusToSend)
 				elif feature['properties']['type'] == "warning":
 					print('GPS is in a warning zone: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')
 					haltMotors = haltMotors or False
-					statusToSend = {"geofenceStatus": "warning"}
-					sio.emit('geofenceStatus', statusToSend)
+					GeoWarning = True
+					#statusToSend = {"geofenceStatus": "warning"}
+					#await sio.emit('geofenceStatus', statusToSend)
 				elif feature['properties']['type'] == "keepin":
 					#print('GPS is within bounds: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')
 					haltMotors = haltMotors or False
 					statusToSend = {"geofenceStatus": "keepin"}
-					sio.emit('geofenceStatus', statusToSend)				
+					#await sio.emit('geofenceStatus', statusToSend)				
 		if GeowithinDataset == False:
 			print("Point was not within dataset, must assume offiste")
 			haltMotors = haltMotors or True
 			statusToSend = {"geofenceStatus": "outOfBounds"}
-			sio.emit('geofenceStatus', statusToSend)
+			#await sio.emit('geofenceStatus', statusToSend)
+		GeoStatusText = "OK"
+		if GeoWarning:
+			GeoStatusText = "WARN"
+		if haltMotors:
+			GeoStatusText = "STOP"
+		statusToSend = {"geofenceStatus": GeoStatusText}
+		await sio.emit('geofenceStatus', statusToSend)
 	else:
 		print("Error in checksum for GPS data: %s" % (data))
 		print("Checksum is:" + str(hex(int(cksum,16))) + " expected " + str(hex(int(calc_cksum,16))))
