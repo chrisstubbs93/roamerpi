@@ -154,13 +154,14 @@ try:
 			if "USB" in port:
 				print("{}: {} [{}]".format(port, desc, hwid))
 				serialAttempt = serial.Serial(port, 115200, timeout=5)
-				time.sleep(2)	
+				time.sleep(5)	
 				attempts = 0			
 				while attempts < 3:
 					try:
 						attempts += 1
 						print("Attempt " + str(attempts) + " on " + port)
 						detection = serialAttempt.read_all()
+						print(detection)
 						if detection[0] == 205 and detection[1] == 171 and fourwd == False:
 							fourwd = True
 							ser2 = serialAttempt
