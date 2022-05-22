@@ -171,7 +171,7 @@ try:
 							serNavspark = serialAttempt
 							print("NavSpark detected on port:" + port)	
 							break
-						elif Steeringdetected == False:
+						elif "$STEER" in str(detection.decode('utf-8')) and Steeringdetected == False:
 							Steeringdetected = True
 							serSteering = serialAttempt
 							print("Steering detected on port: " + port)	
@@ -345,7 +345,7 @@ async def telemetry():
 
 async def bodyControl():
 	while True:
-		await asyncio.sleep(0.5)
+		await asyncio.sleep(0.2)
 		if NavsparkDetected:
 			while serNavspark.inWaiting():
 				rawNavSparkData = serNavspark.readline()
@@ -357,7 +357,10 @@ async def bodyControl():
 				if "BUMP" in bodyControlData: # Bumpstop data
 					await handleBump(bodyControlData)
 
-				if "BUMP" not in bodyControlData and "SONAR" not in bodyControlData: # neither Bump or SONAR so we'll treat this as GPS data
+				if "STEER" in bodyControlData: # Steering data
+					await handleSteer(bodyControlData)
+
+				if "BUMP" not in bodyControlData and "SONAR" not in bodyControlData and "STEER" not in bodyControlData: # neither Bump or SONAR so we'll treat this as GPS data
 					await handleGps(rawNavSparkData.decode('utf-8')) #send raw NMEA to GPS parser
 
 async def lightingControl():
@@ -440,29 +443,33 @@ async def handleGps(nmeaGpsString):
 		if my_gps.latitude[2] == "S":
 				lat = 0 - lat
 
-		if (lastgpstime + 5) < time.time():
-			lastgpstime = time.time()
-
-			timestr = str(my_gps.timestamp[0]).zfill(2) + str(my_gps.timestamp[1]).zfill(2) + str(int(my_gps.timestamp[2])).zfill(2)
-			sats = my_gps.satellites_in_use
-			speed = my_gps.speed[2]*1000/60
-			if my_gps.fix_type == 1:
-				fixtype = "NO"
-			if my_gps.fix_type == 2:
-				fixtype = "2D"
-			if my_gps.fix_type == 3:
-				fixtype = "3D"
-			print("I can see " + str(my_gps.satellites_in_use) + " satellites. My fix is: " + fixtype + "  My coordinates are: " + str(lat) + "," + str(lng) + " The time is: " + timestr)
-			try:
-				print ("posting the shit")
+		timestr = str(my_gps.timestamp[0]).zfill(2) + str(my_gps.timestamp[1]).zfill(2) + str(int(my_gps.timestamp[2])).zfill(2)
+		sats = my_gps.satellites_in_use
+		speed = my_gps.speed[2]*1000/60
+		if my_gps.fix_type == 1:
+			fixtype = "NO"
+		if my_gps.fix_type == 2:
+			fixtype = "2D"
+		if my_gps.fix_type == 3:
+			fixtype = "3D"
+		print("I can see " + str(my_gps.satellites_in_use) + " satellites. My fix is: " + fixtype + "  My coordinates are: " + str(lat) + "," + str(lng) + " The time is: " + timestr)
+		try:	
+			# post the GPS to the sockets at the highest rate we can		
+			await sio.emit('gpsData', {"lat": lat, "long": lng, "sats": sats, "speed": speed, "heading": my_gps.course, "fixtype": fixtype, "gpstime": timestr})	
+			
+			# only post the GPS data to the DB every 30 seconds, as it doesn't matter as much
+			if (lastgpstime + 30) < time.time():
+				lastgpstime = time.time()
+				print ("Posting GPS to database")
 				geturl = "http://roamer.chris-stubbs.co.uk/gps/uploadgps.php?lat="+str(lat)+"&lng="+str(lng)+"&sats="+str(sats)+"&speed="+str(speed)+"&heading="+str(my_gps.course)+"&fixtype="+fixtype+"&gpstime="+timestr
 				print (geturl)
 				ua = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
 				r = requests.get(geturl,headers={"User-Agent": ua})
 				print(r)
-				print("shit posted")
-			except socket.error as socketerror:
-				print("Error: ", socketerror)
+				print("GPS data posted to database")
+
+		except socket.error as socketerror:
+			print("Error: ", socketerror)
 
 		#geofencing
 		point = Point(lng, lat)
@@ -562,6 +569,34 @@ async def handleBump(bumpString):
 	else:
 		print("Error in checksum for BUMP data: %s" % (data))
 		print("Checksums are %s and %s" % (cksum,calc_cksum))
+
+async def handleSteer(steerString):
+	data,cksum,calc_cksum = nmeaChecksum(steerString)
+	if cksum == calc_cksum:
+		steerSplit = data.split(",")
+		steerInput = int(steerSplit[1])
+		steerGear = str(steerSplit[2])
+		steerManualBrake = int(steerSplit[3])
+		steerPedalAvg = int(steerSplit[4])
+		steerSteerSp = steerSplit[5]
+		steerSteerIp = steerSplit[6]
+		steerSteerOp = steerSplit[7]
+		steerCurrentIp = steerSplit[8]
+		steerCurrentOp = steerSplit[9]
+		steerCurrentLimiting = int(steerSplit[10])
+		steerLockout = int(steerSplit[11])
+		steerSentSpeed = int(steerSplit[12])
+		steerSentBrake = int(steerSplit[13])
+
+		if steerLockout is not 0:
+			haltMotors = True
+		else:
+			haltMotors = False
+
+		if steerManualBrake > 0 or steerManualBrake > 0:
+			braking = True
+		else:
+			braking = False
 
 def nmeaChecksum(sentence):
 	if re.search("\n$", sentence):
