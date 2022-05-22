@@ -322,7 +322,8 @@ def main():
 	loop.create_task(timeoutstop()) 
 	loop.create_task(bodyControl())
 	loop.create_task(lightingControl())
-
+	loop.create_task(steeringTelemetry())
+	
 	web.run_app(app, port=9876, ssl_context=ssl_context, loop=loop) #run sio in the loop
 
 ###create asyncio background tasks here###
