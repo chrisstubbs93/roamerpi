@@ -357,11 +357,19 @@ async def bodyControl():
 				if "BUMP" in bodyControlData: # Bumpstop data
 					await handleBump(bodyControlData)
 
-				if "STEER" in bodyControlData: # Steering data
-					await handleSteer(bodyControlData)
-
-				if "BUMP" not in bodyControlData and "SONAR" not in bodyControlData and "STEER" not in bodyControlData: # neither Bump or SONAR so we'll treat this as GPS data
+				if "BUMP" not in bodyControlData and "SONAR" not in bodyControlData: # neither Bump or SONAR so we'll treat this as GPS data
 					await handleGps(rawNavSparkData.decode('utf-8')) #send raw NMEA to GPS parser
+
+async def steeringTelemetry():
+	while True:
+		await asyncio.sleep(0.2)
+		if Steeringdetected:
+			while serSteering.inWaiting():
+				rawSteerData = serSteering.readline()
+				steeringTelemetry = (str(rawSteerData).replace("b'", "").replace("\\r\\n", "").replace("$", ""))[:-1]
+
+				if "STEER" in steeringTelemetry: # just in case there's some other stuff in the chuffinch queue
+					await handleSteerTelemetry(steeringTelemetry)
 
 async def lightingControl():
 	global leftIndicate
@@ -570,7 +578,7 @@ async def handleBump(bumpString):
 		print("Error in checksum for BUMP data: %s" % (data))
 		print("Checksums are %s and %s" % (cksum,calc_cksum))
 
-async def handleSteer(steerString):
+async def handleSteerTelemetry(steerString):
 	data,cksum,calc_cksum = nmeaChecksum(steerString)
 	if cksum == calc_cksum:
 		steerSplit = data.split(",")
