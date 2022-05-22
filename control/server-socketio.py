@@ -440,7 +440,7 @@ async def handleGps(nmeaGpsString):
 		if my_gps.latitude[2] == "S":
 				lat = 0 - lat
 
-		if (lastgpstime + 30) < time.time():
+		if (lastgpstime + 5) < time.time():
 			lastgpstime = time.time()
 
 			timestr = str(my_gps.timestamp[0]).zfill(2) + str(my_gps.timestamp[1]).zfill(2) + str(int(my_gps.timestamp[2])).zfill(2)
