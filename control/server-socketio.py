@@ -597,7 +597,7 @@ async def handleSteerTelemetry(steerString):
 		steerSentSpeed = int(steerSplit[12])
 		steerSentBrake = int(steerSplit[13])
 
-		if steerLockout is not 0:
+		if steerLockout != 0:
 			haltMotors = True
 		else:
 			haltMotors = False
