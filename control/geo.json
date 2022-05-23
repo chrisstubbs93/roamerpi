@@ -923,7 +923,7 @@
         "stroke-opacity": 1,
         "fill": "#ffffff",
         "fill-opacity": 0.3,
-        "title": "debug keepin",
+        "title": "debug fix keepin",
         "enabled": 1,
         "level": 1,
         "type": "keepin"
@@ -951,6 +951,47 @@
             [
               -0.1922607421875,
               51.436888577204996
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stroke": "#05ff22",
+        "stroke-width": 2,
+        "stroke-opacity": 1,
+        "fill": "#ffffff",
+        "fill-opacity": 0.3,
+        "title": "nofix debug keepin",
+        "enabled": 1,
+        "level": 1,
+        "type": "keepin"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -1,
+              -1
+            ],
+            [
+              1,
+              -1
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              -1,
+              1
+            ],
+            [
+              -1,
+              -1
             ]
           ]
         ]
