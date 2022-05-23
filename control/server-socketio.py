@@ -14,6 +14,7 @@ import serial.tools.list_ports
 import time
 import board
 import neopixel
+import sys
 
 socket.setdefaulttimeout(10)
 lastgpstime = 0
@@ -28,6 +29,8 @@ global StopRetryCount
 StopRetryCount = 1 #how many times to send the stop signal in case the serial is awful
 PortHoverboard1 = '/dev/serial0'
 enableAdminEmail = False
+if enableAdminEmail == False:
+	print("Warning - admin email disabled")
 
 fullchainlocation = '/etc/letsencrypt/live/bigclamps.loseyourip.com/fullchain.pem'
 privkeylocation = '/etc/letsencrypt/live/bigclamps.loseyourip.com/privkey.pem'
@@ -90,6 +93,8 @@ ORDER = neopixel.GRB
 ORANGE = (255,140,0)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
+DIMRED = (30, 0, 0)
+OFF = (0, 0, 0)
 
 pixels = neopixel.NeoPixel(
 	pixel_pin, num_pixels, brightness=0.2, auto_write=False, pixel_order=ORDER
@@ -112,6 +117,9 @@ headlights = True
 
 global idleAnimation
 idleAnimation = False
+
+global steeringLocal
+steeringLocal = False
 
 # Pixel Positions
 # Indicators
@@ -154,7 +162,7 @@ try:
 			if "USB" in port:
 				print("{}: {} [{}]".format(port, desc, hwid))
 				serialAttempt = serial.Serial(port, 115200, timeout=5)
-				time.sleep(5)	
+				time.sleep(5)
 				attempts = 0			
 				while attempts < 3:
 					try:
@@ -367,10 +375,10 @@ async def steeringTelemetry():
 		if Steeringdetected:
 			while serSteering.inWaiting():
 				rawSteerData = serSteering.readline()
-				steeringTelemetry = (str(rawSteerData).replace("b'", "").replace("\\r\\n", "").replace("$", ""))[:-1]
-
+				#steeringTelemetry = (str(rawSteerData).replace("b'", "").replace("\\r\\n", "").replace("$", ""))[:-1]
+				steeringTelemetry = rawSteerData.decode('utf-8')
 				if "STEER" in steeringTelemetry: # just in case there's some other stuff in the chuffinch queue
-					await handleSteerTelemetry(steeringTelemetry)
+					await handleSteerTelemetry(steeringTelemetry.replace('\x00',"")) #sometimes there's nulls in the serial. Can't figure out why. This'll do.
 
 async def lightingControl():
 	global leftIndicate
@@ -378,9 +386,10 @@ async def lightingControl():
 	global hazards
 	global headlights
 	global braking
+	global steeringLocal
 
-	while True:
-		if clientConnected:
+	while True: #the loop time is NOT GOOD brian
+		if clientConnected or steeringLocal:
 			for n in reversed(range(0, 9)):
 				if rightIndicate or hazards:
 					pixels[n] = ORANGE		
@@ -401,6 +410,11 @@ async def lightingControl():
 			if braking:
 				for n in range(Right_Rear_Indicate_Start, Left_Rear_Indicate_End+1):
 					pixels[n] = RED #set rear bar to red
+			else:
+				for n in range(Right_Rear_Indicate_Start, Left_Rear_Indicate_End+1):
+					pixels[n] = DIMRED #set rear bar to red
+
+
 		else:
 			await rainbow_cycle(0.003)
 			await asyncio.sleep(0.81)
@@ -461,7 +475,7 @@ async def handleGps(nmeaGpsString):
 			fixtype = "2D"
 		if my_gps.fix_type == 3:
 			fixtype = "3D"
-		print("I can see " + str(my_gps.satellites_in_use) + " satellites. My fix is: " + fixtype + "  My coordinates are: " + str(lat) + "," + str(lng) + " The time is: " + timestr)
+		#print("I can see " + str(my_gps.satellites_in_use) + " satellites. My fix is: " + fixtype + "  My coordinates are: " + str(lat) + "," + str(lng) + " The time is: " + timestr)
 		try:	
 			# post the GPS to the sockets at the highest rate we can		
 			await sio.emit('gpsData', {"lat": lat, "long": lng, "sats": sats, "speed": speed, "heading": my_gps.course, "fixtype": fixtype, "gpstime": timestr})	
@@ -526,7 +540,7 @@ async def handleSonar(sonarString):
 	global frontProxBreach
 	global rearProxBreach
 	data,cksum,calc_cksum = nmeaChecksum(sonarString)
-	if cksum == calc_cksum:
+	if cksum == calc_cksum: #how tf does this work
 		sonarSplit = data.replace("SONAR,", "").split(",")
 		sonar_list = []
 		for pair in sonarSplit:
@@ -557,7 +571,7 @@ async def handleBump(bumpString):
 	global frontBumped
 	global rearBumped
 	data,cksum,calc_cksum = nmeaChecksum(bumpString)
-	if cksum == calc_cksum:
+	if cksum == calc_cksum: #how tf does this work
 		bumpSplit = data.split(",")
 		angle = int(bumpSplit[1])
 		state = int(bumpSplit[2])
@@ -580,41 +594,68 @@ async def handleBump(bumpString):
 		print("Checksums are %s and %s" % (cksum,calc_cksum))
 
 async def handleSteerTelemetry(steerString):
+	global braking
+	global haltMotors
+	global steeringLocal
 	data,cksum,calc_cksum = nmeaChecksum(steerString)
-	if cksum == calc_cksum:
+	if int(cksum,16) == int(calc_cksum,16):
 		steerSplit = data.split(",")
-		steerInput = int(steerSplit[1])
-		steerGear = str(steerSplit[2])
-		steerManualBrake = int(steerSplit[3])
-		steerPedalAvg = int(steerSplit[4])
-		steerSteerSp = steerSplit[5]
-		steerSteerIp = steerSplit[6]
-		steerSteerOp = steerSplit[7]
-		steerCurrentIp = steerSplit[8]
-		steerCurrentOp = steerSplit[9]
-		steerCurrentLimiting = int(steerSplit[10])
-		steerLockout = int(steerSplit[11])
-		steerSentSpeed = int(steerSplit[12])
-		steerSentBrake = int(steerSplit[13])
-
-		if steerLockout != 0:
-			haltMotors = True
+		if data.isprintable() == False:
+			print("Nonprintable data found in sentence")
+			print("data is " + data.encode('unicode_escape').decode('ascii'))
+			print("data array is " , steerSplit)
 		else:
-			haltMotors = False
+			steerInput = int(steerSplit[1])
+			steerGear = str(steerSplit[2])
+			steerManualBrake = int(steerSplit[3])
+			steerPedalAvg = int(steerSplit[4])
+			steerSteerSp = steerSplit[5]
+			steerSteerIp = steerSplit[6]
+			steerSteerOp = steerSplit[7]
+			steerCurrentIp = steerSplit[8]
+			steerCurrentOp = steerSplit[9]
+			steerCurrentLimiting = int(steerSplit[10])
+			steerLockout = int(steerSplit[11])
+			steerSentSpeed = int(steerSplit[12])
+			steerSentBrake = int(steerSplit[13])
 
-		if steerManualBrake > 0 or steerManualBrake > 0:
-			braking = True
-		else:
-			braking = False
+			if steerLockout != 0:
+				haltMotors = True
+				print("Steering is locked out!")
+			else:
+				haltMotors = False
+
+			if steerManualBrake > 0 or steerManualBrake > 0:
+				braking = True
+			else:
+				braking = False
+
+			if steerInput == 0:
+				steeringLocal = True
+			else:
+				steeringLocal = False
+
+	else:
+		print("Error in checksum for STEER data: %s" % (data))
+		print("raw data dump: " + data.encode('unicode_escape').decode('ascii'))
+		print("Checksums are %s and %s" % (cksum,calc_cksum))
+		time.sleep(3)
 
 def nmeaChecksum(sentence):
-	if re.search("\n$", sentence):
-		sentence = sentence[:-1]
+	#if re.search("\n$", sentence):
+	#	sentence = sentence[:-1]
 
 	#sentence = sentence.replace('$', '')
+	#print("sentence " + sentence)
 
-	nmeadata,cksum = re.split('\*', sentence)
+	if "*" in sentence:
+		nmeadata,cksum = re.split('\*', sentence)
+	else:
+		print("Sentence was missing checksum.")
+		return sentence,('0xDE').lower(),('0xAD').lower()
 
+	#print("nmeadata " + nmeadata)
+	#print("cksum " + cksum)
 	calc_cksum = 0
 	for s in nmeadata.replace('$', ''):
 		calc_cksum ^= ord(s)
