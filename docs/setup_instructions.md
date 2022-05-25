@@ -167,5 +167,34 @@ Add this to the end below dtoverlay=disable-bt:
 dtoverlay=disable-wifi
 ```
 
+## video things
+
+https://github.com/richprze/picam_livestream/blob/master/README.md
+https://stackoverflow.com/questions/50492044/how-to-install-heroku-cli-on-raspberry-pi-3
+
+u: admin@roamer.fun
+p: secret! 
+
+Do it all in the home directory, the paths are hardcoded. I initially did it in a folder called vid (and the install script worked), then moved it out to the home directory.
+```sh
+cd /home/pi
+wget https://cli-assets.heroku.com/branches/stable/heroku-linux-arm.tar.gz
+mkdir -p /usr/local/lib /usr/local/bin
+sudo tar -xvzf heroku-linux-arm.tar.gz -C /usr/local/lib
+sudo ln -s /usr/local/lib/heroku/bin/heroku /usr/local/bin/heroku
+heroku version
+sudo heroku update (might need to run more than once)
+
+sudo apt-get install -y python3-pip git ffmpeg libffi-dev nodejs
+sudo pip3 install bcrypt
+git clone https://github.com/richprze/picam_livestream.git
+sudo bash picam_livestream/setup.sh (this may/may not fail and youll need to copy out the commands to run as sudo manually)
+```
+If required: Edit the file /boot/config.txt.
+
+Set the provided URL on the server in settings.php - $videoUrl.
+
+
+
 ## The list goes on...
 Disable IPV6?
