@@ -506,6 +506,7 @@ async def handleGps(nmeaGpsString):
 		point = Point(lng, lat)
 		#haltMotors = False
 		GeoWarning = False
+		GeoHaltMotors = False
 		GeowithinDataset = False
 		for feature in js['features']:
 			polygon = shape(feature['geometry'])
@@ -513,29 +514,21 @@ async def handleGps(nmeaGpsString):
 				GeowithinDataset = True
 				if feature['properties']['type'] == "keepout":
 					print('GPS is within Restricted zone: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will NOT be able to drive regardless of other conditions')
-					haltMotors = haltMotors or True
-					statusToSend = {"geofenceStatus": "keepout"}
-					#await sio.emit('geofenceStatus', statusToSend)
+					GeoHaltMotors = True
 				elif feature['properties']['type'] == "warning":
 					print('GPS is in a warning zone: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')
-					haltMotors = haltMotors or False
 					GeoWarning = True
-					#statusToSend = {"geofenceStatus": "warning"}
-					#await sio.emit('geofenceStatus', statusToSend)
 				elif feature['properties']['type'] == "keepin":
-					#print('GPS is within bounds: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')
-					haltMotors = haltMotors or False
-					statusToSend = {"geofenceStatus": "keepin"}
-					#await sio.emit('geofenceStatus', statusToSend)				
+					#print('GPS is within bounds: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')	
 		if GeowithinDataset == False:
 			print("Point was not within dataset, must assume offiste")
-			haltMotors = haltMotors or True
-			statusToSend = {"geofenceStatus": "outOfBounds"}
-			#await sio.emit('geofenceStatus', statusToSend)
+			GeoHaltMotors = True
+
+		haltMotors = haltMotors or GeohaltMotors
 		GeoStatusText = "OK"
 		if GeoWarning:
 			GeoStatusText = "WARN"
-		if haltMotors:
+		if GeohaltMotors:
 			GeoStatusText = "STOP"
 		statusToSend = {"geofenceStatus": GeoStatusText}
 		await sio.emit('geofenceStatus', statusToSend)
@@ -583,20 +576,22 @@ async def handleBump(bumpString):
 		bumpSplit = data.split(",")
 		angle = int(bumpSplit[1])
 		state = int(bumpSplit[2])
-		bumpToSend = {"angle": angle, "state": state}
+		#bumpToSend = {"angle": angle, "state": state}
 
 		if angle == 0 and state == 1:
 			frontBumped = True
+			await sio.emit('warning', {"message": "Font bumpswitch has been activated. Please reverse."})
 		elif angle == 0 and state == 0:
 			frontBumped = False
 
 		if angle == 180 and state == 1:
 			rearBumped = True
+			await sio.emit('warning', {"message": "Rear bumpswitch has been activated. Please move forward."})
 		elif angle == 180 and state == 0:
 			rearBumped = False
 
-		if bumpToSend:
-			await sio.emit('bump', bumpToSend)
+		#if bumpToSend:
+		#	await sio.emit('bump', bumpToSend)
 	else:
 		print("Error in checksum for BUMP data: %s" % (data))
 		print("Checksums are %s and %s" % (cksum,calc_cksum))
@@ -630,6 +625,8 @@ async def handleSteerTelemetry(steerString):
 			if steerLockout != 0:
 				haltMotors = True
 				print("Steering is locked out!")
+				await sio.emit('warning', {"message": "Roamer has detected a steering fault and has been disabled."})
+
 			else:
 				haltMotors = False
 
