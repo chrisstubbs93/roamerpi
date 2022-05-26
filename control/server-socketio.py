@@ -518,7 +518,7 @@ async def handleGps(nmeaGpsString):
 				elif feature['properties']['type'] == "warning":
 					print('GPS is in a warning zone: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')
 					GeoWarning = True
-				elif feature['properties']['type'] == "keepin":
+				#elif feature['properties']['type'] == "keepin":
 					#print('GPS is within bounds: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')	
 		if GeowithinDataset == False:
 			print("Point was not within dataset, must assume offiste")
