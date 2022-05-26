@@ -581,6 +581,7 @@ async def handleBump(bumpString):
 		if angle == 0 and state == 1:
 			frontBumped = True
 			await sio.emit('warning', {"message": "Font bumpswitch has been activated. Please reverse."})
+			print("front bumped")
 		elif angle == 0 and state == 0:
 			frontBumped = False
 
@@ -728,7 +729,7 @@ async def handle_haltmotoroverride(sid, resetflg):
 	global haltMotors
 	print("MOTOR HALT RESET RECEIVED: ", resetflg)
 	if resetflg == True:
-		haltMotorOverride = False
+		haltMotors = False
 		print("Halt Motor BOOL has been reset")
 
 @sio.event
