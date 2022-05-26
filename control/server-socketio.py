@@ -21,10 +21,10 @@ lastgpstime = 0
 my_gps = MicropyGPS()
 
 #limits & configuration
-maxfwdspeed = 50.0 #max fwd speed
-maxrevspeed = 25.0 #max reverse speed
-steerauth = 0.4 #adjust how much 100% steering actually steers (don't do nuffink)
-speedsteercomp = 2.2 #more steering authority at speed. 2.0 = double steering authority at 100% speed (don't do nuffink)
+maxfwdspeed = 25.0 #max fwd speed
+maxrevspeed = 10.0 #max reverse speed
+steerauth = 1 #adjust how much 100% steering actually steers (don't do nuffink)
+speedsteercomp = 1 #more steering authority at speed. 2.0 = double steering authority at 100% speed (don't do nuffink)
 global StopRetryCount 
 StopRetryCount = 1 #how many times to send the stop signal in case the serial is awful
 PortHoverboard1 = '/dev/serial0'
