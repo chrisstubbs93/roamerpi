@@ -72,10 +72,10 @@ haltMotorsOnProxBreach = True
 haltMotorsOnGeofenceBreach = True
 
 #distance thresholds for SONAR to halt motors
-frontThreshold = 15
-rearThreshold = 15
-leftThreshold = 15
-rightThreshold = 15
+frontThreshold = 30
+rearThreshold = 30
+sideThreshold = 50
+
 
 # Lighting
 # Choose an open pin connected to the Data In of the NeoPixel strip, i.e. board.D18
@@ -560,9 +560,9 @@ async def handleSonar(sonarString):
 			elif angle == 180 and distance > rearThreshold:
 				rearProxBreach = False
 
-			if angle == 90 and distance < frontThreshold:
+			if angle == 90 and distance < sideThreshold:
 				await sio.emit('warning', {"message": "Right proximity sensor warning. Please be careful."})
-			if angle == 270 and distance < frontThreshold:
+			if angle == 270 and distance < sideThreshold:
 				await sio.emit('warning', {"message": "Left proximity sensor warning. Please be careful."})
 
 			sonarToAdd = {"angle": int(angle), "distance": int(distance)}
