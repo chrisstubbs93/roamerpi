@@ -524,11 +524,11 @@ async def handleGps(nmeaGpsString):
 			print("Point was not within dataset, must assume offiste")
 			GeoHaltMotors = True
 
-		haltMotors = haltMotors or GeohaltMotors
+		haltMotors = haltMotors or GeoHaltMotors
 		GeoStatusText = "OK"
 		if GeoWarning:
 			GeoStatusText = "WARN"
-		if GeohaltMotors:
+		if GeoHaltMotors:
 			GeoStatusText = "STOP"
 		statusToSend = {"geofenceStatus": GeoStatusText}
 		await sio.emit('geofenceStatus', statusToSend)
