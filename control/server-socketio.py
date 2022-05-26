@@ -560,6 +560,11 @@ async def handleSonar(sonarString):
 			elif angle == 180 and distance > rearThreshold:
 				rearProxBreach = False
 
+			if angle == 90 and distance < frontThreshold:
+				await sio.emit('warning', {"message": "Right proximity sensor warning. Please be careful."})
+			if angle == 270 and distance < frontThreshold:
+				await sio.emit('warning', {"message": "Left proximity sensor warning. Please be careful."})
+
 			sonarToAdd = {"angle": int(angle), "distance": int(distance)}
 			sonar_list.append(sonarToAdd)
 
