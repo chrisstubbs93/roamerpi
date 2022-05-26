@@ -194,7 +194,7 @@ try:
 							serNavspark = serialAttempt
 							print("NavSpark detected on port:" + port)	
 							break
-						elif "$STEER" in str(detection.decode('utf-8')) and Steeringdetected == False:
+						elif "$STEER" in str(detection.decode('utf-8').replace('\x00',"")) and Steeringdetected == False:
 							Steeringdetected = True
 							serSteering = serialAttempt
 							print("Steering detected on port: " + port)	
@@ -216,7 +216,7 @@ else:
 	print("One or more serial devices not found.")
 	print("====================================================================")
 	print("====================================================================")
-	time.sleep(0.07)
+	time.sleep(5)
 
 ##############################################
 
@@ -379,9 +379,9 @@ async def steeringTelemetry():
 			while serSteering.inWaiting():
 				rawSteerData = serSteering.readline()
 				#steeringTelemetry = (str(rawSteerData).replace("b'", "").replace("\\r\\n", "").replace("$", ""))[:-1]
-				steeringTelemetry = rawSteerData.decode('utf-8')
+				steeringTelemetry = rawSteerData.decode('utf-8').replace('\x00',"") #sometimes there's nulls in the serial. Can't figure out why. This'll do.
 				if "STEER" in steeringTelemetry: # just in case there's some other stuff in the chuffinch queue
-					await handleSteerTelemetry(steeringTelemetry.replace('\x00',"")) #sometimes there's nulls in the serial. Can't figure out why. This'll do.
+					await handleSteerTelemetry(steeringTelemetry) 
 
 async def lightingControl():
 	global leftIndicate
