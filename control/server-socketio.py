@@ -499,7 +499,7 @@ async def handleGps(nmeaGpsString):
 
 		#geofencing
 		point = Point(lng, lat)
-		haltMotors = False
+		#haltMotors = False
 		GeoWarning = False
 		GeowithinDataset = False
 		for feature in js['features']:
