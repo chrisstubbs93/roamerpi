@@ -550,11 +550,13 @@ async def handleSonar(sonarString):
 			distance = int(distanceStr)
 			if angle == 0 and distance < frontThreshold:
 				frontProxBreach = True
+				await sio.emit('warning', {"message": "Font proximity sensor has been breached. Please reverse."})
 			elif angle == 0 and distance > frontThreshold:
 				frontProxBreach = False
 
 			if angle == 180 and distance < rearThreshold:
 				rearProxBreach = True
+				await sio.emit('warning', {"message": "Rear proximity sensor has been breached. Please reverse."})
 			elif angle == 180 and distance > rearThreshold:
 				rearProxBreach = False
 
@@ -581,7 +583,6 @@ async def handleBump(bumpString):
 		if angle == 0 and state == 1:
 			frontBumped = True
 			await sio.emit('warning', {"message": "Font bumpswitch has been activated. Please reverse."})
-			print("front bumped")
 		elif angle == 0 and state == 0:
 			frontBumped = False
 
