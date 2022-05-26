@@ -154,6 +154,21 @@ Steeringdetected = False
 #connect to hoverboard
 ser = serial.Serial(PortHoverboard1, 115200, timeout=5)  # open main serial port
 
+def adminEmail(sub, msg):
+	if enableAdminEmail:
+		try:
+			encodedMsg = urllib.parse.quote(msg, safe='')
+			encodedSub = urllib.parse.quote(sub, safe='')
+
+			geturl = "https://roamer.fun/admin/mail.php?sec=PIPEallNIGHT&sub="+str(encodedSub)+"&msg="+str(encodedMsg)
+			print (geturl)
+			ua = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
+			r = requests.get(geturl,headers={"User-Agent": ua})
+			print(r)
+			print("email sent")
+		except socket.error as socketerror:
+			print("Error: ", socketerror)
+
 # connect to ports (auto-detection)
 try:
 	ports = serial.tools.list_ports.comports()
@@ -193,28 +208,16 @@ except Exception as e:
 detectionSummary = "NavSpark detected: " + str(NavsparkDetected) + "\nSteering detected: " + str(Steeringdetected) + "\nHoverboard #2 detected: " + str(fourwd) + "\n"
 print("PORT DETECTION SUMMARY:")
 print(detectionSummary)
-print("")
-print("")
-
-def adminEmail(sub, msg):
-	if enableAdminEmail:
-		try:
-			encodedMsg = urllib.parse.quote(msg, safe='')
-			encodedSub = urllib.parse.quote(sub, safe='')
-
-			geturl = "https://roamer.fun/admin/mail.php?sec=PIPEallNIGHT&sub="+str(encodedSub)+"&msg="+str(encodedMsg)
-			print (geturl)
-			ua = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
-			r = requests.get(geturl,headers={"User-Agent": ua})
-			print(r)
-			print("email sent")
-		except socket.error as socketerror:
-			print("Error: ", socketerror)
 
 if NavsparkDetected and Steeringdetected and fourwd:
 	adminEmail("Roamer control started", detectionSummary)
 else:
 	adminEmail("Serial autodetection issue",detectionSummary)
+	print("One or more serial devices not found.")
+	print("====================================================================")
+	print("====================================================================")
+	time.sleep(0.07)
+
 ##############################################
 
 def sendcmd(steerin,speed):
