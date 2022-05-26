@@ -247,18 +247,23 @@ def sendcmd(steerin,speed):
 	if haltMotorsOnGeofenceBreach:
 		if haltMotors == True and haltMotorOverride == False: # if the Motors are halted because of Geofencing then set speed to 0 unless it's overridden by the FE
 			speed = 0
+			print("Motors stopped due to haltMotors")
 
 	if haltMotorsOnBump:
 		if frontBumped == True and haltMotorOverride == False and speed > 0: # the front bump stop is pushed, set speed to 0 if they're trying to go forward. otherwise let it reverse
 			speed = 0
+			print("Motors stopped due to frontBumped")
 		if rearBumped == True and haltMotorOverride == False and speed < 0: # the rear bump stop is pushed, set speed to 0 if they're trying to go in reverse. otherwise let it go forward
 			speed = 0
+			print("Motors stopped due to rearBumped")
 
 	if haltMotorsOnProxBreach:
 		if frontProxBreach == True and haltMotorOverride == False and speed > 0: # the front bump stop is pushed, set speed to 0 if they're trying to go forward. otherwise let it reverse
 			speed = 0
+			print("Motors stopped due to frontProxBreach")
 		if rearProxBreach == True and haltMotorOverride == False and speed < 0: # the rear bump stop is pushed, set speed to 0 if they're trying to go in reverse. otherwise let it go forward
 			speed = 0
+			print("Motors stopped due to rearProxBreach")
 
 	#calculate packet
 	portbusy = True
@@ -294,7 +299,7 @@ def sendcmd(steerin,speed):
 			rightIndicate = False
 			leftIndicate = False		
 		if haltMotors == True and haltMotorOverride == False:
-			steerin = 0
+			steerin = 0 #steer to zero when disabled so it can at least be pushed in a straight line.
 		serSteering.write((str(numpy.clip(100,-100,steerin))+"\n").encode('utf_8')) #old mode
 	portbusy = False
 
@@ -720,6 +725,14 @@ async def handle_haltmotoroverride(sid, override):
 	else:
 		haltMotorOverride = False
 		print("Halt Motor BOOL IS NOT OVERRIDDEN")
+
+@sio.on('haltmotorreset')
+async def handle_haltmotoroverride(sid, resetflg):
+	global haltMotors
+	print("MOTOR HALT RESET RECEIVED: ", resetflg)
+	if resetflg == True:
+		haltMotorOverride = False
+		print("Halt Motor BOOL has been reset")
 
 @sio.event
 async def connect(sid, environ):
