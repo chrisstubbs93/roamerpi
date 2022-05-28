@@ -188,13 +188,21 @@ sudo heroku update (might need to run more than once)
 
 sudo apt-get install -y python3-pip git ffmpeg libffi-dev nodejs
 sudo pip3 install bcrypt
-git clone https://github.com/richprze/picam_livestream.git
-sudo bash picam_livestream/setup.sh (this may/may not fail and youll need to copy out the commands to run as sudo manually)
+git clone https://https://github.com/chrisstubbs93/roamer_livestream.git
+sudo bash roamer_livestream/setup.sh (this may/may not fail and youll need to copy out the commands to run as sudo manually)
 ```
 If required: Edit the file /boot/config.txt.
-
 Set the provided URL on the server in settings.php - $videoUrl.
-
+make the script autostart using desktop:
+```sh
+sudo nano /etc/xdg/autostart/stream.desktop
+```
+with the contents:
+```sh
+[Desktop Entry]
+Name=StreamDesktop
+Exec=sudo bash /home/pi/roamer_livestream/start.sh
+```
 
 
 ## The list goes on...
