@@ -176,6 +176,7 @@ u: admin@roamer.fun
 p: secret! 
 
 Do it all in the home directory, the paths are hardcoded. I initially did it in a folder called vid (and the install script worked), then moved it out to the home directory.
+Delete the old cronjob if re-running setup.
 ```sh
 cd /home/pi
 wget https://cli-assets.heroku.com/branches/stable/heroku-linux-arm.tar.gz
