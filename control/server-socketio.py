@@ -27,6 +27,10 @@ steerauth = 1 #adjust how much 100% steering actually steers (don't do nuffink)
 speedsteercomp = 1 #more steering authority at speed. 2.0 = double steering authority at 100% speed (don't do nuffink)
 global StopRetryCount 
 StopRetryCount = 1 #how many times to send the stop signal in case the serial is awful
+
+batteryWarningThreshold = 38.0 # voltage that we'll send a warning at
+telemetryWarningTimeout = 10 # in seconds, how long until we send an email panicking about not having any telemetry
+
 PortHoverboard1 = '/dev/serial0'
 enableAdminEmail = False
 if enableAdminEmail == False:
@@ -43,6 +47,21 @@ lastSerialSendMs = 0
 
 lasttime = 0
 fourwd = False
+
+global hover1LastTime
+global hover2LastTime
+hover1LastTime = 0
+hover2LastTime = 0
+
+global hover1BatteryWarned
+global hover2BatteryWarned
+hover1BatteryWarned = False
+hover2BatteryWarned = False
+
+global hover1TelemetryWarned
+global hover2TelemetryWarned
+hover1TelemetryWarned = False
+hover2TelemetryWarned = False
 
 global clientConnected
 clientConnected = False
@@ -344,8 +363,28 @@ def main():
 
 ###create asyncio background tasks here###
 async def telemetry():
+	global hover1LastTime
+	global hover2LastTime
+	global hover1BatteryWarned
+	global hover2BatteryWarned
+	global hover1TelemetryWarned
+	global hover2TelemetryWarned
 	while True:
 		await asyncio.sleep(1)
+		if (current_milli_time()>=hover1LastTime+(telemetryWarningTimeout * 1000)) and hover1TelemetryWarned == False:			
+			adminEmail("HOVER #1 TELEMETRY TIMEOUT", "Hoverboard #1 TELEMETRY TIMEOUT. No telemetry has been received for this many seconds: " + telemetryWarningTimeout)
+			hover1TelemetryWarned = True
+		elif hover1TelemetryWarned == True:
+			hover1TelemetryWarned = False
+			adminEmail("HOVER #1 Telemetry Restored", "Hoverboard #1 Telemetry Restored.")
+		
+		if (current_milli_time()>=hover2LastTime+(telemetryWarningTimeout * 1000)) and hover2TelemetryWarned == False:			
+			adminEmail("HOVER #2 TELEMETRY TIMEOUT", "Hoverboard #2 TELEMETRY TIMEOUT. No telemetry has been received for this many seconds: " + telemetryWarningTimeout)
+			hover2TelemetryWarned = True
+		elif hover2TelemetryWarned == True:
+			hover2TelemetryWarned = False
+			adminEmail("HOVER #2 Telemetry Restored", "Hoverboard #2 Telemetry Restored.")
+		
 		if portbusy == False:
 			feedback = ser.read_all()
 			if feedback:
@@ -353,12 +392,27 @@ async def telemetry():
 					cmd1, cmd2, speedR_meas, speedL_meas, batVoltage, boardTemp, cmdLed = struct.unpack('<hhhhhhH', feedback[2:16])
 					#print(f'cmd1: {cmd1}, cmd2: {cmd2}, speedR_meas: {speedR_meas}, speedL_meas: {speedL_meas}, batVoltage: {batVoltage}, boardTemp: {boardTemp}, cmdLed: {cmdLed}')	
 					await sio.emit('telemetry', {"cmd1": cmd1, "cmd2": cmd2, "speedR_meas": speedR_meas, "speedL_meas": speedL_meas, "batVoltage": batVoltage/100, "boardTemp": boardTemp/10, "cmdLed": cmdLed})
+					hover1LastTime = current_milli_time()
+					if batVoltage < batteryWarningThreshold and hover1BatteryWarned == False:
+						adminEmail("HOVER #1 BATTERY LOW", "Hoverboard #1 Battery Voltage is low. Voltage: " + batVoltage)
+						hover1BatteryWarned = True
+					if batVoltage > batteryWarningThreshold and hover1BatteryWarned == True:
+						hover1BatteryWarned = False
+						adminEmail("HOVER #1 battery restored", "Hoverboard #1 Battery Voltage is normal. Voltage: " + batVoltage)
 			if fourwd == True:
 				feedback2 = ser2.read_all()
 				if feedback2:
 					if feedback2[0] == 205 and feedback2[1] == 171: #check start byte
 						cmd1, cmd2, speedR_meas, speedL_meas, batVoltage, boardTemp, cmdLed = struct.unpack('<hhhhhhH', feedback2[2:16])
 						await sio.emit('telemetry2', {"cmd1": cmd1, "cmd2": cmd2, "speedR_meas": speedR_meas, "speedL_meas": speedL_meas, "batVoltage": batVoltage/100, "boardTemp": boardTemp/10, "cmdLed": cmdLed})
+						hover2LastTime = current_milli_time()
+						if batVoltage < batteryWarningThreshold and hover2BatteryWarned == False:
+							adminEmail("HOVER #2 BATTERY LOW", "Hoverboard #2 Battery Voltage is low. Voltage: " + batVoltage)
+							hover2BatteryWarned = True
+						if batVoltage > batteryWarningThreshold and hover2BatteryWarned == True:
+							hover2BatteryWarned = False
+							adminEmail("HOVER #2 battery restored", "Hoverboard #2 Battery Voltage is normal. Voltage: " + batVoltage)
+
 
 async def bodyControl():
 	while True:
