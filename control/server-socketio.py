@@ -68,6 +68,9 @@ global hover2TelemetryWarned
 hover1TelemetryWarned = False
 hover2TelemetryWarned = False
 
+global steerLockoutWarned
+steerLockoutWarned = False
+
 global clientConnected
 clientConnected = False
 
@@ -683,6 +686,7 @@ async def handleSteerTelemetry(steerString):
 	global braking
 	global haltMotors
 	global steeringLocal
+	global steerLockoutWarned
 	data,cksum,calc_cksum = nmeaChecksum(steerString)
 	if int(cksum,16) == int(calc_cksum,16):
 		steerSplit = data.split(",")
@@ -709,9 +713,13 @@ async def handleSteerTelemetry(steerString):
 				haltMotors = True
 				print("Steering is locked out!")
 				await sio.emit('warning', {"message": "Roamer has detected a steering fault and has been disabled."})
-
+				if steerLockoutWarned == False:
+					adminEmail("Steering Locked Out", "The steering has been locked out")
+				steerLockoutWarned = True
+			
 			else:
 				haltMotors = False
+				steerLockoutWarned = False
 
 			if steerManualBrake > 0 or steerManualBrake > 0:
 				braking = True
