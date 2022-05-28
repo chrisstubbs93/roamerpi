@@ -376,14 +376,14 @@ async def telemetry():
 	global hover2TelemetryWarned
 	while True:
 		await asyncio.sleep(1)
-		if (current_milli_time()>=hover1LastTime+(telemetryWarningTimeout * 1000)) and hover1TelemetryWarned == False:			
+		if (current_milli_time()>=hover1LastTime+(telemetryWarningTimeout * 1000)) and hover1TelemetryWarned == False and hover1LastTime > 0:			
 			adminEmail("HOVER #1 TELEMETRY TIMEOUT", "Hoverboard #1 TELEMETRY TIMEOUT. No telemetry has been received for this many seconds: " + str(telemetryWarningTimeout))
 			hover1TelemetryWarned = True
 		elif hover1TelemetryWarned == True:
 			hover1TelemetryWarned = False
 			adminEmail("HOVER #1 Telemetry Restored", "Hoverboard #1 Telemetry Restored.")
 		
-		if (current_milli_time()>=hover2LastTime+(telemetryWarningTimeout * 1000)) and hover2TelemetryWarned == False:			
+		if (current_milli_time()>=hover2LastTime+(telemetryWarningTimeout * 1000)) and hover2TelemetryWarned == False and hover2LastTime > 0:			
 			adminEmail("HOVER #2 TELEMETRY TIMEOUT", "Hoverboard #2 TELEMETRY TIMEOUT. No telemetry has been received for this many seconds: " + str(telemetryWarningTimeout))
 			hover2TelemetryWarned = True
 		elif hover2TelemetryWarned == True:
