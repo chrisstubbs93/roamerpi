@@ -15,6 +15,7 @@ import time
 import board
 import neopixel
 import sys
+import datetime
 
 socket.setdefaulttimeout(10)
 lastgpstime = 0
@@ -31,8 +32,12 @@ StopRetryCount = 1 #how many times to send the stop signal in case the serial is
 batteryWarningThreshold = 38.0 # voltage that we'll send a warning at
 telemetryWarningTimeout = 10 # in seconds, how long until we send an email panicking about not having any telemetry
 
+# 24-hour clock, this is used to dim the lights during the day
+daytimeHourStart = 5
+daytimeHourEnd = 20
+
 PortHoverboard1 = '/dev/serial0'
-enableAdminEmail = False
+enableAdminEmail = True
 if enableAdminEmail == False:
 	print("Warning - admin email disabled")
 
@@ -372,14 +377,14 @@ async def telemetry():
 	while True:
 		await asyncio.sleep(1)
 		if (current_milli_time()>=hover1LastTime+(telemetryWarningTimeout * 1000)) and hover1TelemetryWarned == False:			
-			adminEmail("HOVER #1 TELEMETRY TIMEOUT", "Hoverboard #1 TELEMETRY TIMEOUT. No telemetry has been received for this many seconds: " + telemetryWarningTimeout)
+			adminEmail("HOVER #1 TELEMETRY TIMEOUT", "Hoverboard #1 TELEMETRY TIMEOUT. No telemetry has been received for this many seconds: " + str(telemetryWarningTimeout))
 			hover1TelemetryWarned = True
 		elif hover1TelemetryWarned == True:
 			hover1TelemetryWarned = False
 			adminEmail("HOVER #1 Telemetry Restored", "Hoverboard #1 Telemetry Restored.")
 		
 		if (current_milli_time()>=hover2LastTime+(telemetryWarningTimeout * 1000)) and hover2TelemetryWarned == False:			
-			adminEmail("HOVER #2 TELEMETRY TIMEOUT", "Hoverboard #2 TELEMETRY TIMEOUT. No telemetry has been received for this many seconds: " + telemetryWarningTimeout)
+			adminEmail("HOVER #2 TELEMETRY TIMEOUT", "Hoverboard #2 TELEMETRY TIMEOUT. No telemetry has been received for this many seconds: " + str(telemetryWarningTimeout))
 			hover2TelemetryWarned = True
 		elif hover2TelemetryWarned == True:
 			hover2TelemetryWarned = False
@@ -394,11 +399,11 @@ async def telemetry():
 					await sio.emit('telemetry', {"cmd1": cmd1, "cmd2": cmd2, "speedR_meas": speedR_meas, "speedL_meas": speedL_meas, "batVoltage": batVoltage/100, "boardTemp": boardTemp/10, "cmdLed": cmdLed})
 					hover1LastTime = current_milli_time()
 					if batVoltage < batteryWarningThreshold and hover1BatteryWarned == False:
-						adminEmail("HOVER #1 BATTERY LOW", "Hoverboard #1 Battery Voltage is low. Voltage: " + batVoltage)
+						adminEmail("HOVER #1 BATTERY LOW", "Hoverboard #1 Battery Voltage is low. Voltage: " + str(batVoltage))
 						hover1BatteryWarned = True
 					if batVoltage > batteryWarningThreshold and hover1BatteryWarned == True:
 						hover1BatteryWarned = False
-						adminEmail("HOVER #1 battery restored", "Hoverboard #1 Battery Voltage is normal. Voltage: " + batVoltage)
+						adminEmail("HOVER #1 battery restored", "Hoverboard #1 Battery Voltage is normal. Voltage: " + str(batVoltage))
 			if fourwd == True:
 				feedback2 = ser2.read_all()
 				if feedback2:
@@ -407,11 +412,11 @@ async def telemetry():
 						await sio.emit('telemetry2', {"cmd1": cmd1, "cmd2": cmd2, "speedR_meas": speedR_meas, "speedL_meas": speedL_meas, "batVoltage": batVoltage/100, "boardTemp": boardTemp/10, "cmdLed": cmdLed})
 						hover2LastTime = current_milli_time()
 						if batVoltage < batteryWarningThreshold and hover2BatteryWarned == False:
-							adminEmail("HOVER #2 BATTERY LOW", "Hoverboard #2 Battery Voltage is low. Voltage: " + batVoltage)
+							adminEmail("HOVER #2 BATTERY LOW", "Hoverboard #2 Battery Voltage is low. Voltage: " + str(batVoltage))
 							hover2BatteryWarned = True
 						if batVoltage > batteryWarningThreshold and hover2BatteryWarned == True:
 							hover2BatteryWarned = False
-							adminEmail("HOVER #2 battery restored", "Hoverboard #2 Battery Voltage is normal. Voltage: " + batVoltage)
+							adminEmail("HOVER #2 battery restored", "Hoverboard #2 Battery Voltage is normal. Voltage: " + str(batVoltage))
 
 
 async def bodyControl():
@@ -451,6 +456,7 @@ async def lightingControl():
 	global steeringLocal
 
 	while True: #the loop time is NOT GOOD brian
+		now = datetime.datetime.now()
 		if clientConnected or steeringLocal:
 			for n in reversed(range(0, 9)):
 				if rightIndicate or hazards:
@@ -475,6 +481,13 @@ async def lightingControl():
 			else:
 				for n in range(Right_Rear_Indicate_Start, Left_Rear_Indicate_End+1):
 					pixels[n] = DIMRED #set rear bar to red
+
+			if now.hour >= daytimeHourStart and now.hour <= daytimeHourEnd: # it's daytime, dim the underglow.
+				for n in range(Underglow_Start, Underglow_End+1):
+					pixels[n] = OFF #Underglow off during the day
+			else:
+				for n in range(Underglow_Start, Underglow_End+1):
+					await underglow_rainbow_cycle(0.003)
 
 
 		else:
@@ -507,6 +520,14 @@ def wheel(pos):
 async def rainbow_cycle(wait):
 	for j in range(255):
 		for i in range(num_pixels):
+			pixel_index = (i * 256 // num_pixels) + j
+			pixels[i] = wheel(pixel_index & 255)
+		pixels.show()
+		await asyncio.sleep(wait)
+
+async def underglow_rainbow_cycle(wait):
+	for j in range(255):
+		for i in range(Underglow_Start, Underglow_End+1):
 			pixel_index = (i * 256 // num_pixels) + j
 			pixels[i] = wheel(pixel_index & 255)
 		pixels.show()
