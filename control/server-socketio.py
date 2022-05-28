@@ -487,7 +487,7 @@ async def lightingControl():
 					pixels[n] = DIMRED #set rear bar to red
 
 			if now.hour >= daytimeHourStart and now.hour <= daytimeHourEnd: # it's daytime, dim the underglow.
-				for n in range(Underglow_Start, Underglow_End+1):
+				for n in range(Underglow_Start, Underglow_End):
 					pixels[n] = OFF #Underglow off during the day
 			else:
 				for n in range(Underglow_Start, Underglow_End+1):
