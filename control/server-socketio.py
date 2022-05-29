@@ -563,16 +563,22 @@ def wheel(pos):
 	return (r, g, b) if ORDER in (neopixel.RGB, neopixel.GRB) else (r, g, b, 0)
 
 async def rainbow_cycle(wait):
+	global clientConnected
 	for j in range(255):
 		for i in range(num_pixels):
+			if clientConnected:
+				break
 			pixel_index = (i * 256 // num_pixels) + j
 			pixels[i] = wheel(pixel_index & 255)
 		pixels.show()
 		await asyncio.sleep(wait)
 
 async def underglow_rainbow_cycle(wait):
+	global clientConnected
 	for j in range(255):
 		for i in range(Underglow_Start, Underglow_End):
+			if clientConnected == False:
+				break
 			pixel_index = (i * 256 // num_pixels) + j
 			pixels[i] = wheel(pixel_index & 255)
 		pixels.show()
