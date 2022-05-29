@@ -1005,10 +1005,10 @@
         "stroke-opacity": 1,
         "fill": "#ffffff",
         "fill-opacity": 0.3,
-        "title": "nofix debug keepin",
+        "title": "nofix debug warning",
         "enabled": 1,
         "level": 1,
-        "type": "keepin"
+        "type": "warning"
       },
       "geometry": {
         "type": "Polygon",
