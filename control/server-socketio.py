@@ -261,7 +261,7 @@ def sendcmd(steerin,speed):
 	:param steer: -1000...1000	:param speed: -1000...1000	:
 	'''
 	#print("Sendcmd("+str(steerin)+","+str(speed)+")")
-	try:
+	#try:
 		global steerHaltMotors
 		global geoHaltMotors
 		global haltMotorOverride
@@ -343,11 +343,9 @@ def sendcmd(steerin,speed):
 				leftIndicate = False		
 			if steerHaltMotors == True and haltMotorOverride == False:
 				steerin = 0 #steer to zero when disabled so it can at least be pushed in a straight line.
-			try:
-				serSteering.write((str(numpy.clip(100,-100,steerin))+"\n").encode('utf_8')) #old mode
-			except serial.SerialException as serExc:
-				# do nothing
-				sys.exc_clear()
+
+			serSteering.write((str(numpy.clip(100,-100,steerin))+"\n").encode('utf_8')) #old mode
+			
 		portbusy = False
 
 		global lastSerialSendMs
@@ -356,10 +354,10 @@ def sendcmd(steerin,speed):
 		if timez > 700:
 			print("WARNING TIME SINCE LAST SERIAL SEND: "+ str(timez))
 		lastSerialSendMs = current_milli_time()
-	except serial.SerialException as serExc:
-		print('SENDCMD (Serial): EXCEPTION RAISED: {}'.format(serExc))
-	except Exception as e:
-		print('SENDCMD: EXCEPTION RAISED: {}'.format(e))
+	# except serial.SerialException as serExc:
+	# 	print('SENDCMD (Serial): EXCEPTION RAISED: {}'.format(serExc))
+	# except Exception as e:
+	# 	print('SENDCMD: EXCEPTION RAISED: {}'.format(e))
 
 
 def SendAndResetTimeout(steer,speed):
