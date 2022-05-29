@@ -343,7 +343,8 @@ def sendcmd(steerin,speed):
 				leftIndicate = False		
 			if steerHaltMotors == True and haltMotorOverride == False:
 				steerin = 0 #steer to zero when disabled so it can at least be pushed in a straight line.
-			serSteering.write((str(numpy.clip(100,-100,steerin))+"\n").encode('utf_8')) #old mode
+			if serSteering.is_open:
+				serSteering.write((str(numpy.clip(100,-100,steerin))+"\n").encode('utf_8')) #old mode
 		portbusy = False
 
 		global lastSerialSendMs
