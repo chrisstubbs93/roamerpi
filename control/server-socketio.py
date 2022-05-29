@@ -205,7 +205,7 @@ def adminEmail(sub, msg):
 try:
 	ports = serial.tools.list_ports.comports()
 	print("Begin Serial Autodetection")
-	serialAttempt = NULL
+	serialAttempt = None
 	for port, desc, hwid in sorted(ports):
 			if "USB" in port:
 				print("{}: {} [{}]".format(port, desc, hwid))				
@@ -213,7 +213,7 @@ try:
 				while attempts < 3:
 					try:
 						attempts += 1
-						if serialAttempt is not NULL:
+						if serialAttempt is not None:
 							serialAttempt.reset_input_buffer()
 							serialAttempt.close()			
 						serialAttempt = serial.Serial(port, 115200, timeout=5)
