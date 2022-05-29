@@ -524,7 +524,8 @@ async def lightingControl():
 						pixels[n] = OFF #Underglow off during the day
 				else:
 					for n in range(Underglow_Start, Underglow_End+1):
-						await underglow_rainbow_cycle(0.003)
+						#await underglow_rainbow_cycle(0.003)
+						print("nothing")
 
 
 			else:
