@@ -451,6 +451,13 @@ async def telemetry():
 			elif (current_milli_time()<hover2LastTime+(telemetryWarningTimeout * 1000)) and hover2TelemetryWarned == True:
 				hover2TelemetryWarned = False
 				asyncio.create_task(adminEmail("HOVER #2 Telemetry Restored", "Hoverboard #2 Telemetry Restored."))
+
+			if hover1TelemetryWarned or hover2TelemetryWarned:
+				await sio.emit('warning', {"message": "Roamer has detected a traction power fault and may be disabled."})
+
+			if hover1BatteryWarned or hover2BatteryWarned:
+				await sio.emit('warning', {"message": "Roamer has a low battery and may die soon."})
+
 	except Exception as e:
 		print('TELEMETRY THREAD: EXCEPTION RAISED: {}'.format(e))
 		
