@@ -627,8 +627,9 @@ async def handleGps(nmeaGpsString):
 				fixtype = "3D"
 			#print("I can see " + str(my_gps.satellites_in_use) + " satellites. My fix is: " + fixtype + "  My coordinates are: " + str(lat) + "," + str(lng) + " The time is: " + timestr)
 			try:	
-				# post the GPS to the sockets at the highest rate we can		
-				await sio.emit('gpsData', {"lat": lat, "long": lng, "sats": sats, "speed": speed, "heading": my_gps.course, "fixtype": fixtype, "gpstime": timestr})	
+				# post the GPS to the sockets at the highest rate we can
+				if (lastgpstime + 2) < time.time():		
+					await sio.emit('gpsData', {"lat": lat, "long": lng, "sats": sats, "speed": speed, "heading": my_gps.course, "fixtype": fixtype, "gpstime": timestr})	
 				
 				# only post the GPS data to the DB every 30 seconds, as it doesn't matter as much
 				if (lastgpstime + 30) < time.time():
@@ -654,10 +655,12 @@ async def handleGps(nmeaGpsString):
 				if polygon.contains(point):
 					geoWithinDataset = True
 					if feature['properties']['type'] == "keepout":
-						print('GPS is within Restricted zone: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will NOT be able to drive regardless of other conditions')
+						if (lastgpstime + 1) < time.time():
+							print('GPS is within Restricted zone: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will NOT be able to drive regardless of other conditions')
 						geoHaltMotors = True
 					elif feature['properties']['type'] == "warning":
-						print('GPS is in a warning zone: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')
+						if (lastgpstime + 1) < time.time():
+							print('GPS is in a warning zone: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')
 						geoWarning = True
 					#elif feature['properties']['type'] == "keepin":
 						#print('GPS is within bounds: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')	
@@ -671,7 +674,8 @@ async def handleGps(nmeaGpsString):
 			if geoHaltMotors:
 				geoStatusText = "STOP"
 			statusToSend = {"geofenceStatus": geoStatusText}
-			await sio.emit('geofenceStatus', statusToSend)
+			if (lastgpstime + 1) < time.time():
+				await sio.emit('geofenceStatus', statusToSend)
 		else:
 			print("Error in checksum for GPS data: %s" % (data))
 			print("Checksum is:" + str(hex(int(cksum,16))) + " expected " + str(hex(int(calc_cksum,16))))
