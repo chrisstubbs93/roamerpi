@@ -33,7 +33,7 @@ speedsteercomp = 1 #more steering authority at speed. 2.0 = double steering auth
 global StopRetryCount 
 StopRetryCount = 1 #how many times to send the stop signal in case the serial is awful
 
-batteryWarningThreshold = 38.0 # voltage that we'll send a warning at
+batteryWarningThreshold = 38.0*100 # voltage that we'll send a warning at (in 100/ths of a volt)
 telemetryWarningTimeout = 10 # in seconds, how long until we send an email panicking about not having any telemetry
 
 # 24-hour clock, this is used to dim the lights during the day
