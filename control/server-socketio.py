@@ -492,6 +492,7 @@ async def lightingControl():
 		global headlights
 		global braking
 		global steeringLocal
+		global clientConnected
 
 		while True: #the loop time is NOT GOOD brian			
 			if clientConnected or steeringLocal:
@@ -528,15 +529,16 @@ async def lightingControl():
 		print('LIGHTING THREAD: EXCEPTION RAISED: {}'.format(e))
 
 async def underglowControl():
+	global clientConnected
 	while True:
-		now = datetime.datetime.now()
-		if now.hour >= daytimeHourStart and now.hour <= daytimeHourEnd: # it's daytime, dim the underglow.
-			for n in range(Underglow_Start, Underglow_End):
-				pixels[n] = OFF #Underglow off during the day
-		else:
-			for n in range(Underglow_Start, Underglow_End):
+		if clientConnected:
+			now = datetime.datetime.now()
+			if now.hour >= daytimeHourStart and now.hour <= daytimeHourEnd: # it's daytime, dim the underglow.
+				for n in range(Underglow_Start, Underglow_End):
+					pixels[n] = OFF #Underglow off during the day
+			else:				
 				await underglow_rainbow_cycle(0.003)
-				await asyncio.sleep(0.81)
+		await asyncio.sleep(0.81)
 				#print("nothing")
 
 def wheel(pos):
