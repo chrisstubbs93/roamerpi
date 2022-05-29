@@ -211,11 +211,7 @@ try:
 				attempts = 0			
 				while attempts < 3:
 					try:
-						attempts += 1
-						if serialAttempt is not None and (NavsparkDetected == False or Steeringdetected == False or fourwd == False):
-							serialAttempt.reset_input_buffer()
-							serialAttempt.close()
-							print("Closed Port for next port: " + str(port))			
+						attempts += 1							
 						serialAttempt = serial.Serial(port, 115200, timeout=5)
 						time.sleep(5)
 						print("Attempt " + str(attempts) + " on " + port)
@@ -234,7 +230,11 @@ try:
 							Steeringdetected = True
 							serSteering = serialAttempt
 							print("Steering detected on port: " + port)	
-							break		
+							break	
+						if serialAttempt is not None and (NavsparkDetected == False or Steeringdetected == False or fourwd == False):
+							serialAttempt.reset_input_buffer()
+							serialAttempt.close()
+							print("Closed Port for next port: " + str(port))			
 					except Exception as e:
 						print('AUTODETECT EXCEPTION RAISED: {}'.format(e))
 
