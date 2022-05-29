@@ -237,7 +237,7 @@ try:
 						print("AUTODETECT EXCEPTION: " + e)	
 
 except Exception as e:
-	print("Port auto-detection failed.")
+	print("Port auto-detection failed. Exception: " + e)
 
 detectionSummary = "NavSpark detected: " + str(NavsparkDetected) + "\nSteering detected: " + str(Steeringdetected) + "\nHoverboard #2 detected: " + str(fourwd) + "\n"
 print("PORT DETECTION SUMMARY:")
