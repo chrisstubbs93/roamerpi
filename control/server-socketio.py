@@ -249,9 +249,9 @@ print("PORT DETECTION SUMMARY:")
 print(detectionSummary)
 
 if NavsparkDetected and Steeringdetected and fourwd:
-	adminEmail("Roamer control started", detectionSummary)
+	asyncio.run(adminEmail("Roamer control started", detectionSummary))
 else:
-	adminEmail("Serial autodetection issue",detectionSummary)
+	asyncio.run(adminEmail("Serial autodetection issue",detectionSummary))
 	print("One or more serial devices not found.")
 	print("====================================================================")
 	print("====================================================================")
