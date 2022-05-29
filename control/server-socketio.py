@@ -233,8 +233,8 @@ try:
 							serSteering = serialAttempt
 							print("Steering detected on port: " + port)	
 							break		
-					except:
-						print("Can't determine port type. Is it connected? Port: " + port)	
+					except Exception as e:
+						print("AUTODETECT EXCEPTION: " + e)	
 
 except Exception as e:
 	print("Port auto-detection failed.")
