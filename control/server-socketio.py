@@ -202,13 +202,16 @@ try:
 	print("Begin Serial Autodetection")
 	for port, desc, hwid in sorted(ports):
 			if "USB" in port:
-				print("{}: {} [{}]".format(port, desc, hwid))
-				serialAttempt = serial.Serial(port, 115200, timeout=5)
-				time.sleep(5)
+				print("{}: {} [{}]".format(port, desc, hwid))				
 				attempts = 0			
 				while attempts < 3:
 					try:
 						attempts += 1
+						if serialAttempt is not None:
+							serialAttempt.reset_input_buffer()
+							serialAttempt.close()			
+						serialAttempt = serial.Serial(port, 115200, timeout=5)
+						time.sleep(5)
 						print("Attempt " + str(attempts) + " on " + port)
 						detection = serialAttempt.read_all()
 						if detection[0] == 205 and detection[1] == 171 and fourwd == False:
