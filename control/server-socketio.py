@@ -389,6 +389,7 @@ def main():
 	loop.create_task(bodyControl())
 	loop.create_task(lightingControl())
 	loop.create_task(steeringTelemetry())
+	loop.create_task(underglowControl())
 	
 	web.run_app(app, port=9876, ssl_context=ssl_context, loop=loop) #run sio in the loop
 
@@ -492,8 +493,7 @@ async def lightingControl():
 		global braking
 		global steeringLocal
 
-		while True: #the loop time is NOT GOOD brian
-			now = datetime.datetime.now()
+		while True: #the loop time is NOT GOOD brian			
 			if clientConnected or steeringLocal:
 				for n in reversed(range(0, 9)):
 					if rightIndicate or hazards:
@@ -518,16 +518,7 @@ async def lightingControl():
 				else:
 					for n in range(Right_Rear_Indicate_Start, Left_Rear_Indicate_End+1):
 						pixels[n] = DIMRED #set rear bar to red
-
-				if now.hour >= daytimeHourStart and now.hour <= daytimeHourEnd: # it's daytime, dim the underglow.
-					for n in range(Underglow_Start, Underglow_End):
-						pixels[n] = OFF #Underglow off during the day
-				else:
-					for n in range(Underglow_Start, Underglow_End+1):
-						#await underglow_rainbow_cycle(0.003)
-						print("nothing")
-
-
+				
 			else:
 				await rainbow_cycle(0.003)
 				await asyncio.sleep(0.81)
@@ -535,6 +526,16 @@ async def lightingControl():
 			pixels.show()
 	except Exception as e:
 		print('LIGHTING THREAD: EXCEPTION RAISED: {}'.format(e))
+
+async def underglowControl():
+	now = datetime.datetime.now()
+	if now.hour >= daytimeHourStart and now.hour <= daytimeHourEnd: # it's daytime, dim the underglow.
+		for n in range(Underglow_Start, Underglow_End):
+			pixels[n] = OFF #Underglow off during the day
+	else:
+		for n in range(Underglow_Start, Underglow_End):
+			await underglow_rainbow_cycle(0.003)
+			#print("nothing")
 
 def wheel(pos):
 	# Input a value 0 to 255 to get a color value.
