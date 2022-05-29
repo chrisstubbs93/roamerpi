@@ -572,7 +572,7 @@ async def rainbow_cycle(wait):
 
 async def underglow_rainbow_cycle(wait):
 	for j in range(255):
-		for i in range(Underglow_Start, Underglow_End+1):
+		for i in range(Underglow_Start, Underglow_End):
 			pixel_index = (i * 256 // num_pixels) + j
 			pixels[i] = wheel(pixel_index & 255)
 		pixels.show()
