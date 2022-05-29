@@ -571,6 +571,8 @@ async def rainbow_cycle(wait):
 			pixel_index = (i * 256 // num_pixels) + j
 			pixels[i] = wheel(pixel_index & 255)
 		pixels.show()
+		if clientConnected:
+			break
 		await asyncio.sleep(wait)
 
 async def underglow_rainbow_cycle(wait):
