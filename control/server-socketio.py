@@ -34,7 +34,7 @@ telemetryWarningTimeout = 10 # in seconds, how long until we send an email panic
 
 # 24-hour clock, this is used to dim the lights during the day
 daytimeHourStart = 5
-daytimeHourEnd = 14
+daytimeHourEnd = 20
 
 PortHoverboard1 = '/dev/serial0'
 enableAdminEmail = True
