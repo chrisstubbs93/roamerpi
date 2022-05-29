@@ -639,13 +639,7 @@ async def handleGps(nmeaGpsString):
 				# only post the GPS data to the DB every 30 seconds, as it doesn't matter as much
 				if (lastgpstime + 30) < time.time():
 					lastgpstime = time.time()
-					print ("Posting GPS to database")
-					geturl = "http://roamer.fun/gps/uploadgps.php?lat="+str(lat)+"&lng="+str(lng)+"&sats="+str(sats)+"&speed="+str(speed)+"&heading="+str(my_gps.course)+"&fixtype="+fixtype+"&gpstime="+timestr
-					print (geturl)
-					ua = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
-					r = requests.get(geturl,headers={"User-Agent": ua})
-					print(r)
-					print("GPS data posted to database")
+					asyncio.create_task(postGpsData(lat, lng, sats, speed, fixtype, timestr, my_gps))
 
 			except socket.error as socketerror:
 				print("Error: ", socketerror)
@@ -687,6 +681,15 @@ async def handleGps(nmeaGpsString):
 			print("Checksum is:" + str(hex(int(cksum,16))) + " expected " + str(hex(int(calc_cksum,16))))
 	except Exception as e:
 		print('GPS THREAD: EXCEPTION RAISED: {}'.format(e))
+
+async def postGpsData(lat, lng, sats, speed, fixtype, timestr, my_gpsobj):
+	print ("Posting GPS to database")
+	geturl = "http://roamer.fun/gps/uploadgps.php?lat="+str(lat)+"&lng="+str(lng)+"&sats="+str(sats)+"&speed="+str(speed)+"&heading="+str(my_gpsobj.course)+"&fixtype="+fixtype+"&gpstime="+timestr
+	print (geturl)
+	ua = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
+	r = requests.get(geturl,headers={"User-Agent": ua})
+	print(r)
+	print("GPS data posted to database")
 
 async def handleSonar(sonarString):
 	try:
