@@ -262,103 +262,103 @@ def sendcmd(steerin,speed):
 	:param steer: -1000...1000	:param speed: -1000...1000	:
 	'''
 	#print("Sendcmd("+str(steerin)+","+str(speed)+")")
-	#try:
-	global steerHaltMotors
-	global geoHaltMotors
-	global haltMotorOverride
-	global frontBumped
-	global rearBumped
-	global frontProxBreach
-	global rearProxBreach
-	global leftIndicate
-	global rightIndicate
-	global StopRetryCount
+	try:
+		global steerHaltMotors
+		global geoHaltMotors
+		global haltMotorOverride
+		global frontBumped
+		global rearBumped
+		global frontProxBreach
+		global rearProxBreach
+		global leftIndicate
+		global rightIndicate
+		global StopRetryCount
 
-	if speed > 0:
-		speed = int((numpy.clip(100,-100,speed)/100.0)*maxfwdspeed)
-	else:
-		speed = int((numpy.clip(100,-100,speed)/100.0)*maxrevspeed)
-	#steer = int((numpy.clip(100,-100,steerin)*steerauth*(1+((speedsteercomp-1)*abs(speed)/100)))) #disable diff steering
-	steer = 0 #don't skid steer using the hoverboards
-
-	if haltMotorsOnGeofenceBreach:
-		if geoHaltMotors == True and haltMotorOverride == False: # if the Motors are halted because of Geofencing then set speed to 0 unless it's overridden by the FE
-			speed = 0
-			print("Motors stopped due to geoHaltMotors")
-
-	if haltMotorsOnSteerLockout:
-		if steerHaltMotors == True and haltMotorOverride == False: # if the Motors are halted because of Geofencing then set speed to 0 unless it's overridden by the FE
-			speed = 0
-			print("Motors stopped due to steerHaltMotors")		
-
-	if haltMotorsOnBump:
-		if frontBumped == True and haltMotorOverride == False and speed > 0: # the front bump stop is pushed, set speed to 0 if they're trying to go forward. otherwise let it reverse
-			speed = 0
-			print("Motors stopped due to frontBumped")
-		if rearBumped == True and haltMotorOverride == False and speed < 0: # the rear bump stop is pushed, set speed to 0 if they're trying to go in reverse. otherwise let it go forward
-			speed = 0
-			print("Motors stopped due to rearBumped")
-
-	if haltMotorsOnProxBreach:
-		if frontProxBreach == True and haltMotorOverride == False and speed > 0: # the front bump stop is pushed, set speed to 0 if they're trying to go forward. otherwise let it reverse
-			speed = 0
-			print("Motors stopped due to frontProxBreach")
-		if rearProxBreach == True and haltMotorOverride == False and speed < 0: # the rear bump stop is pushed, set speed to 0 if they're trying to go in reverse. otherwise let it go forward
-			speed = 0
-			print("Motors stopped due to rearProxBreach")
-
-	#calculate packet
-	portbusy = True
-	startB = bytes.fromhex('ABCD')[::-1] # lower byte first
-	steerB = struct.pack('h', steer)
-	speedB = struct.pack('h', speed)
-	brakeB = struct.pack('h', 0) #don't bother with braking in speed mode
-	driveModeB = struct.pack('h', 2) #2=speed, 3=torque
-	crcB = bytes(a^b^c^d^e for (a, b, c, d, e) in zip(startB, steerB, speedB, brakeB, driveModeB))
-
-	#send it
-	if speed == 0:
-		SerialSendRetries = StopRetryCount
-	else:
-		SerialSendRetries = 1
-	for cnt in range(SerialSendRetries):
-		if ser.is_open:
-			ser.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
-		if fourwd:
-			if ser2.is_open:
-				ser2.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
-		time.sleep(0.07)
-
-
-	#do the arduino steering
-	if Steeringdetected:
-		steerin = steerin * -1 #because it's backwards
-		if steerin < -20:
-			rightIndicate = True
-			leftIndicate = False
-		elif steerin > 20:
-			rightIndicate = False
-			leftIndicate = True
+		if speed > 0:
+			speed = int((numpy.clip(100,-100,speed)/100.0)*maxfwdspeed)
 		else:
-			rightIndicate = False
-			leftIndicate = False		
-		if steerHaltMotors == True and haltMotorOverride == False:
-			steerin = 0 #steer to zero when disabled so it can at least be pushed in a straight line.
+			speed = int((numpy.clip(100,-100,speed)/100.0)*maxrevspeed)
+		#steer = int((numpy.clip(100,-100,steerin)*steerauth*(1+((speedsteercomp-1)*abs(speed)/100)))) #disable diff steering
+		steer = 0 #don't skid steer using the hoverboards
 
-		serSteering.write((str(numpy.clip(100,-100,steerin))+"\n").encode('utf_8')) #old mode
-		
-	portbusy = False
+		if haltMotorsOnGeofenceBreach:
+			if geoHaltMotors == True and haltMotorOverride == False: # if the Motors are halted because of Geofencing then set speed to 0 unless it's overridden by the FE
+				speed = 0
+				print("Motors stopped due to geoHaltMotors")
 
-	global lastSerialSendMs
-	timez = current_milli_time()-lastSerialSendMs
-	#print("ms since last serial: " + str(timez))
-	if timez > 700:
-		print("WARNING TIME SINCE LAST SERIAL SEND: "+ str(timez))
-	lastSerialSendMs = current_milli_time()
-	# except serial.SerialException as serExc:
-	# 	print('SENDCMD (Serial): EXCEPTION RAISED: {}'.format(serExc))
-	# except Exception as e:
-	# 	print('SENDCMD: EXCEPTION RAISED: {}'.format(e))
+		if haltMotorsOnSteerLockout:
+			if steerHaltMotors == True and haltMotorOverride == False: # if the Motors are halted because of Geofencing then set speed to 0 unless it's overridden by the FE
+				speed = 0
+				print("Motors stopped due to steerHaltMotors")		
+
+		if haltMotorsOnBump:
+			if frontBumped == True and haltMotorOverride == False and speed > 0: # the front bump stop is pushed, set speed to 0 if they're trying to go forward. otherwise let it reverse
+				speed = 0
+				print("Motors stopped due to frontBumped")
+			if rearBumped == True and haltMotorOverride == False and speed < 0: # the rear bump stop is pushed, set speed to 0 if they're trying to go in reverse. otherwise let it go forward
+				speed = 0
+				print("Motors stopped due to rearBumped")
+
+		if haltMotorsOnProxBreach:
+			if frontProxBreach == True and haltMotorOverride == False and speed > 0: # the front bump stop is pushed, set speed to 0 if they're trying to go forward. otherwise let it reverse
+				speed = 0
+				print("Motors stopped due to frontProxBreach")
+			if rearProxBreach == True and haltMotorOverride == False and speed < 0: # the rear bump stop is pushed, set speed to 0 if they're trying to go in reverse. otherwise let it go forward
+				speed = 0
+				print("Motors stopped due to rearProxBreach")
+
+		#calculate packet
+		portbusy = True
+		startB = bytes.fromhex('ABCD')[::-1] # lower byte first
+		steerB = struct.pack('h', steer)
+		speedB = struct.pack('h', speed)
+		brakeB = struct.pack('h', 0) #don't bother with braking in speed mode
+		driveModeB = struct.pack('h', 2) #2=speed, 3=torque
+		crcB = bytes(a^b^c^d^e for (a, b, c, d, e) in zip(startB, steerB, speedB, brakeB, driveModeB))
+
+		#send it
+		if speed == 0:
+			SerialSendRetries = StopRetryCount
+		else:
+			SerialSendRetries = 1
+		for cnt in range(SerialSendRetries):
+			if ser.is_open:
+				ser.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
+			if fourwd:
+				if ser2.is_open:
+					ser2.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
+			time.sleep(0.07)
+
+
+		#do the arduino steering
+		if Steeringdetected:
+			steerin = steerin * -1 #because it's backwards
+			if steerin < -20:
+				rightIndicate = True
+				leftIndicate = False
+			elif steerin > 20:
+				rightIndicate = False
+				leftIndicate = True
+			else:
+				rightIndicate = False
+				leftIndicate = False		
+			if steerHaltMotors == True and haltMotorOverride == False:
+				steerin = 0 #steer to zero when disabled so it can at least be pushed in a straight line.
+
+			serSteering.write((str(numpy.clip(100,-100,steerin))+"\n").encode('utf_8')) #old mode
+			
+		portbusy = False
+
+		global lastSerialSendMs
+		timez = current_milli_time()-lastSerialSendMs
+		#print("ms since last serial: " + str(timez))
+		if timez > 700:
+			print("WARNING TIME SINCE LAST SERIAL SEND: "+ str(timez))
+		lastSerialSendMs = current_milli_time()
+	except serial.SerialException as serExc:
+		print('SENDCMD (Serial): EXCEPTION RAISED: {}'.format(serExc))
+	except Exception as e:
+		print('SENDCMD: EXCEPTION RAISED: {}'.format(e))
 
 
 def SendAndResetTimeout(steer,speed):
@@ -809,13 +809,13 @@ def current_milli_time():
 async def timeoutstop():
 	while True:
 		await asyncio.sleep(0.25)
-		#try:
-		global lasttime
-		if (current_milli_time()>=lasttime+500):
-			#print("----Control Timeout!!---- Lasttime:" + str(lasttime) + " Now:" + str(current_milli_time()) + " ----Motors Stopped!!----")
-			stp()
-		#except BaseException as error:
-		#	print('An exception occurred in timeoutstop: {}'.format(error))
+		try:
+			global lasttime
+			if (current_milli_time()>=lasttime+500):
+				#print("----Control Timeout!!---- Lasttime:" + str(lasttime) + " Now:" + str(current_milli_time()) + " ----Motors Stopped!!----")
+				stp()
+		except BaseException as error:
+			print('An exception occurred in timeoutstop: {}'.format(error))
 
 #handle socket events
 @sio.on('control')
