@@ -350,6 +350,8 @@ def sendcmd(steerin,speed):
 		if timez > 700:
 			print("WARNING TIME SINCE LAST SERIAL SEND: "+ str(timez))
 		lastSerialSendMs = current_milli_time()
+	except serial.SerialException as serExc:
+		print('SENDCMD (Serial): EXCEPTION RAISED: {}'.format(serExc))
 	except Exception as e:
 		print('SENDCMD: EXCEPTION RAISED: {}'.format(e))
 
