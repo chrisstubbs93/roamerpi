@@ -1,3 +1,4 @@
+from asyncio.windows_events import NULL
 from contextlib import nullcontext
 import serial, struct, time, numpy # for hoverboard comms
 import urllib.request
@@ -204,6 +205,7 @@ def adminEmail(sub, msg):
 try:
 	ports = serial.tools.list_ports.comports()
 	print("Begin Serial Autodetection")
+	serialAttempt = NULL
 	for port, desc, hwid in sorted(ports):
 			if "USB" in port:
 				print("{}: {} [{}]".format(port, desc, hwid))				
@@ -211,7 +213,7 @@ try:
 				while attempts < 3:
 					try:
 						attempts += 1
-						if serialAttempt is not None:
+						if serialAttempt is not NULL:
 							serialAttempt.reset_input_buffer()
 							serialAttempt.close()			
 						serialAttempt = serial.Serial(port, 115200, timeout=5)
@@ -234,10 +236,10 @@ try:
 							print("Steering detected on port: " + port)	
 							break		
 					except Exception as e:
-						print("AUTODETECT EXCEPTION: " + e)	
+						print('AUTODETECT EXCEPTION RAISED: {}'.format(e))
 
 except Exception as e:
-	print("Port auto-detection failed. Exception: " + e)
+		print('AUTODETECT EXCEPTION RAISED: {}'.format(e))
 
 detectionSummary = "NavSpark detected: " + str(NavsparkDetected) + "\nSteering detected: " + str(Steeringdetected) + "\nHoverboard #2 detected: " + str(fourwd) + "\n"
 print("PORT DETECTION SUMMARY:")
