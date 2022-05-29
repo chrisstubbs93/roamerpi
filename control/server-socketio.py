@@ -347,7 +347,7 @@ def sendcmd(steerin,speed):
 				serSteering.write((str(numpy.clip(100,-100,steerin))+"\n").encode('utf_8')) #old mode
 			except serial.SerialException as serExc:
 				# do nothing
-				pass
+				sys.exc_clear()
 		portbusy = False
 
 		global lastSerialSendMs
