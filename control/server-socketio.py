@@ -808,13 +808,13 @@ def current_milli_time():
 async def timeoutstop():
 	while True:
 		await asyncio.sleep(0.25)
-		try:
-			global lasttime
-			if (current_milli_time()>=lasttime+500):
-				#print("----Control Timeout!!---- Lasttime:" + str(lasttime) + " Now:" + str(current_milli_time()) + " ----Motors Stopped!!----")
-				stp()
-		except BaseException as error:
-			print('An exception occurred in timeoutstop: {}'.format(error))
+		#try:
+		global lasttime
+		if (current_milli_time()>=lasttime+500):
+			#print("----Control Timeout!!---- Lasttime:" + str(lasttime) + " Now:" + str(current_milli_time()) + " ----Motors Stopped!!----")
+			stp()
+		#except BaseException as error:
+		#	print('An exception occurred in timeoutstop: {}'.format(error))
 
 #handle socket events
 @sio.on('control')
