@@ -351,7 +351,7 @@ def sendcmd(steerin,speed):
 			print("WARNING TIME SINCE LAST SERIAL SEND: "+ str(timez))
 		lastSerialSendMs = current_milli_time()
 	except Exception as e:
-		print('EXCEPTION RAISED: {}'.format(e))
+		print('SENDCMD: EXCEPTION RAISED: {}'.format(e))
 
 
 def SendAndResetTimeout(steer,speed):
@@ -439,7 +439,7 @@ async def telemetry():
 				hover2TelemetryWarned = False
 				adminEmail("HOVER #2 Telemetry Restored", "Hoverboard #2 Telemetry Restored.")
 	except Exception as e:
-		print('EXCEPTION RAISED: {}'.format(e))
+		print('TELEMETRY THREAD: EXCEPTION RAISED: {}'.format(e))
 		
 
 async def bodyControl():
@@ -474,7 +474,7 @@ async def steeringTelemetry():
 					if "STEER" in steeringTelemetry: # just in case there's some other stuff in the chuffinch queue
 						await handleSteerTelemetry(steeringTelemetry) 
 	except Exception as e:
-		print('EXCEPTION RAISED: {}'.format(e))
+		print('STEERING TELEMETRY THREAD: EXCEPTION RAISED: {}'.format(e))
 
 async def lightingControl():
 	try:
@@ -526,7 +526,7 @@ async def lightingControl():
 
 			pixels.show()
 	except Exception as e:
-		print('EXCEPTION RAISED: {}'.format(e))
+		print('LIGHTING THREAD: EXCEPTION RAISED: {}'.format(e))
 
 def wheel(pos):
 	# Input a value 0 to 255 to get a color value.
@@ -642,7 +642,7 @@ async def handleGps(nmeaGpsString):
 			print("Error in checksum for GPS data: %s" % (data))
 			print("Checksum is:" + str(hex(int(cksum,16))) + " expected " + str(hex(int(calc_cksum,16))))
 	except Exception as e:
-		print('EXCEPTION RAISED: {}'.format(e))
+		print('GPS THREAD: EXCEPTION RAISED: {}'.format(e))
 
 async def handleSonar(sonarString):
 	try:
@@ -683,7 +683,7 @@ async def handleSonar(sonarString):
 			print("Error in checksum for SONAR data: %s" % (data))
 			print("Checksums are %s and %s" % (cksum,calc_cksum))
 	except Exception as e:
-		print('EXCEPTION RAISED: {}'.format(e))
+		print('SONAR THREAD: EXCEPTION RAISED: {}'.format(e))
 
 async def handleBump(bumpString):
 	try:
@@ -714,7 +714,7 @@ async def handleBump(bumpString):
 			print("Error in checksum for BUMP data: %s" % (data))
 			print("Checksums are %s and %s" % (cksum,calc_cksum))
 	except Exception as e:
-		print('EXCEPTION RAISED: {}'.format(e))
+		print('BUMP THREAD: EXCEPTION RAISED: {}'.format(e))
 
 async def handleSteerTelemetry(steerString):
 	global braking
