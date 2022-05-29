@@ -564,16 +564,29 @@ def wheel(pos):
 
 async def rainbow_cycle(wait):
 	global clientConnected
-	for j in range(255):
-		for i in range(num_pixels):
+	now = datetime.datetime.now()
+	if now.hour >= daytimeHourStart and now.hour <= daytimeHourEnd: # daytime we only want to rainbow the headlight and rear bar
+		for j in range(255):
+			for i in range(Right_Front_Indicate_Start, Left_Rear_Indicate_End):
+				if clientConnected:
+					break
+				pixel_index = (i * 256 // num_pixels) + j
+				pixels[i] = wheel(pixel_index & 255)
+			pixels.show()
 			if clientConnected:
 				break
-			pixel_index = (i * 256 // num_pixels) + j
-			pixels[i] = wheel(pixel_index & 255)
-		pixels.show()
-		if clientConnected:
-			break
-		await asyncio.sleep(wait)
+			await asyncio.sleep(wait)
+	else:
+		for j in range(255):
+			for i in range(num_pixels):
+				if clientConnected:
+					break
+				pixel_index = (i * 256 // num_pixels) + j
+				pixels[i] = wheel(pixel_index & 255)
+			pixels.show()
+			if clientConnected:
+				break
+			await asyncio.sleep(wait)
 
 async def underglow_rainbow_cycle(wait):
 	global clientConnected
