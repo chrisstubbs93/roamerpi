@@ -217,7 +217,7 @@ try:
 							serialAttempt.close()
 							print("Closed Port for next port: " + str(port))							
 						serialAttempt = serial.Serial(port, 115200, timeout=5)
-						time.sleep(5)
+						time.sleep(2)
 						print("Attempt " + str(attempts) + " on " + port)
 						detection = serialAttempt.read_all()
 						if detection[0] == 205 and detection[1] == 171 and fourwd == False:
