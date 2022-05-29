@@ -33,7 +33,7 @@ speedsteercomp = 1 #more steering authority at speed. 2.0 = double steering auth
 global StopRetryCount 
 StopRetryCount = 1 #how many times to send the stop signal in case the serial is awful
 
-batteryWarningThreshold = 37.0*100 # voltage that we'll send a warning at (in 100/ths of a volt)
+batteryWarningThreshold = 37*100 # voltage that we'll send a warning at (in 100/ths of a volt)
 telemetryWarningTimeout = 10 # in seconds, how long until we send an email panicking about not having any telemetry
 
 # 24-hour clock, this is used to dim the lights during the day
@@ -419,11 +419,11 @@ async def telemetry():
 						await sio.emit('telemetry', {"cmd1": cmd1, "cmd2": cmd2, "speedR_meas": speedR_meas, "speedL_meas": speedL_meas, "batVoltage": batVoltage/100, "boardTemp": boardTemp/10, "cmdLed": cmdLed})
 						hover1LastTime = current_milli_time()
 						if batVoltage < batteryWarningThreshold and hover1BatteryWarned == False:
-							asyncio.create_task(adminEmail("HOVER #1 BATTERY LOW", "Hoverboard #1 Battery Voltage is low. Voltage: " + str(batVoltage)))
+							asyncio.create_task(adminEmail("HOVER #1 BATTERY LOW", "Hoverboard #1 Battery Voltage is low. Voltage: " + str(batVoltage) + " Threshold: " + str(batteryWarningThreshold)))
 							hover1BatteryWarned = True
 						if batVoltage > batteryWarningThreshold and hover1BatteryWarned == True:
 							hover1BatteryWarned = False
-							asyncio.create_task(adminEmail("HOVER #1 battery restored", "Hoverboard #1 Battery Voltage is normal. Voltage: " + str(batVoltage)))
+							asyncio.create_task(adminEmail("HOVER #1 battery restored", "Hoverboard #1 Battery Voltage is normal. Voltage: " + str(batVoltage) + " Threshold: " + str(batteryWarningThreshold)))
 				if fourwd == True:
 					feedback2 = ser2.read_all()
 					if feedback2:
@@ -432,11 +432,11 @@ async def telemetry():
 							await sio.emit('telemetry2', {"cmd1": cmd1, "cmd2": cmd2, "speedR_meas": speedR_meas, "speedL_meas": speedL_meas, "batVoltage": batVoltage/100, "boardTemp": boardTemp/10, "cmdLed": cmdLed})
 							hover2LastTime = current_milli_time()
 							if batVoltage < batteryWarningThreshold and hover2BatteryWarned == False:
-								asyncio.create_task(adminEmail("HOVER #2 BATTERY LOW", "Hoverboard #2 Battery Voltage is low. Voltage: " + str(batVoltage)))
+								asyncio.create_task(adminEmail("HOVER #2 BATTERY LOW", "Hoverboard #2 Battery Voltage is low. Voltage: " + str(batVoltage) + " Threshold: " + str(batteryWarningThreshold)))
 								hover2BatteryWarned = True
 							if batVoltage > batteryWarningThreshold and hover2BatteryWarned == True:
 								hover2BatteryWarned = False
-								asyncio.create_task(adminEmail("HOVER #2 battery restored", "Hoverboard #2 Battery Voltage is normal. Voltage: " + str(batVoltage)))
+								asyncio.create_task(adminEmail("HOVER #2 battery restored", "Hoverboard #2 Battery Voltage is normal. Voltage: " + str(batVoltage) + " Threshold: " + str(batteryWarningThreshold)))
 
 			if (current_milli_time()>=hover1LastTime+(telemetryWarningTimeout * 1000)) and hover1TelemetryWarned == False:			
 				asyncio.create_task(adminEmail("HOVER #1 TELEMETRY TIMEOUT", "Hoverboard #1 TELEMETRY TIMEOUT. No telemetry has been received for this many seconds: " + str(telemetryWarningTimeout)))
