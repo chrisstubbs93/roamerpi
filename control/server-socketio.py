@@ -3,6 +3,7 @@ import serial, struct, time, numpy # for hoverboard comms
 import urllib.request
 import urllib.parse
 from aiohttp import web
+from aiohttp import ClientSession
 import socketio, ssl, asyncio, logging
 import re
 import socket
@@ -685,11 +686,15 @@ async def handleGps(nmeaGpsString):
 async def postGpsData(lat, lng, sats, speed, fixtype, timestr, my_gpsobj):
 	print ("Posting GPS to database")
 	geturl = "http://roamer.fun/gps/uploadgps.php?lat="+str(lat)+"&lng="+str(lng)+"&sats="+str(sats)+"&speed="+str(speed)+"&heading="+str(my_gpsobj.course)+"&fixtype="+fixtype+"&gpstime="+timestr
-	print (geturl)
-	ua = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
-	r = requests.get(geturl,headers={"User-Agent": ua})
-	print(r)
-	print("GPS data posted to database")
+	#print (geturl)
+	#ua = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
+	#r = requests.get(geturl,headers={"User-Agent": ua})
+	#print(r)	
+	async with ClientSession() as session:
+		async with session.get(geturl) as response:
+			response = await response.read()
+			print(response)
+			print("GPS data posted to database")
 
 async def handleSonar(sonarString):
 	try:
