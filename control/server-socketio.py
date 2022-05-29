@@ -75,8 +75,11 @@ global clientConnected
 clientConnected = False
 
 #global motor halt vars for GPS/SONAR/BUMP
-global haltMotors
-haltMotors = False
+global steerHaltMotors
+steerHaltMotors = False
+
+global geoHaltMotors
+geoHaltMotors = False
 
 global haltMotorOverride
 haltMotorOverride = False
@@ -97,6 +100,7 @@ rearProxBreach = False
 haltMotorsOnBump = True
 haltMotorsOnProxBreach = True
 haltMotorsOnGeofenceBreach = True
+haltMotorsOnSteerLockout = True
 
 #distance thresholds for SONAR to halt motors
 frontThreshold = 30
@@ -257,7 +261,8 @@ def sendcmd(steerin,speed):
 	'''
 	#print("Sendcmd("+str(steerin)+","+str(speed)+")")
 
-	global haltMotors
+	global steerHaltMotors
+	global geoHaltMotors
 	global haltMotorOverride
 	global frontBumped
 	global rearBumped
@@ -275,9 +280,14 @@ def sendcmd(steerin,speed):
 	steer = 0 #don't skid steer using the hoverboards
 
 	if haltMotorsOnGeofenceBreach:
-		if haltMotors == True and haltMotorOverride == False: # if the Motors are halted because of Geofencing then set speed to 0 unless it's overridden by the FE
+		if geoHaltMotors == True and haltMotorOverride == False: # if the Motors are halted because of Geofencing then set speed to 0 unless it's overridden by the FE
 			speed = 0
-			print("Motors stopped due to haltMotors")
+			print("Motors stopped due to geoHaltMotors")
+
+	if haltMotorsOnSteerLockout:
+		if steerHaltMotors == True and haltMotorOverride == False: # if the Motors are halted because of Geofencing then set speed to 0 unless it's overridden by the FE
+			speed = 0
+			print("Motors stopped due to steerHaltMotors")		
 
 	if haltMotorsOnBump:
 		if frontBumped == True and haltMotorOverride == False and speed > 0: # the front bump stop is pushed, set speed to 0 if they're trying to go forward. otherwise let it reverse
@@ -328,7 +338,7 @@ def sendcmd(steerin,speed):
 		else:
 			rightIndicate = False
 			leftIndicate = False		
-		if haltMotors == True and haltMotorOverride == False:
+		if steerHaltMotors == True and haltMotorOverride == False:
 			steerin = 0 #steer to zero when disabled so it can at least be pushed in a straight line.
 		serSteering.write((str(numpy.clip(100,-100,steerin))+"\n").encode('utf_8')) #old mode
 	portbusy = False
@@ -542,7 +552,7 @@ async def underglow_rainbow_cycle(wait):
 
 async def handleGps(nmeaGpsString):	
 	global lastgpstime
-	global haltMotors
+	global geoHaltMotors
 	data,cksum,calc_cksum = nmeaChecksum(nmeaGpsString)
 	if int(cksum,16) == int(calc_cksum,16):
 		for x in nmeaGpsString:
@@ -586,33 +596,31 @@ async def handleGps(nmeaGpsString):
 
 		#geofencing
 		point = Point(lng, lat)
-		#haltMotors = False
-		GeoWarning = False
-		GeoHaltMotors = False
-		GeowithinDataset = False
+		geoWarning = False
+		geoHaltMotors = False
+		geoWithinDataset = False
 		for feature in js['features']:
 			polygon = shape(feature['geometry'])
 			if polygon.contains(point):
-				GeowithinDataset = True
+				geoWithinDataset = True
 				if feature['properties']['type'] == "keepout":
 					print('GPS is within Restricted zone: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will NOT be able to drive regardless of other conditions')
-					GeoHaltMotors = True
+					geoHaltMotors = True
 				elif feature['properties']['type'] == "warning":
 					print('GPS is in a warning zone: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')
-					GeoWarning = True
+					geoWarning = True
 				#elif feature['properties']['type'] == "keepin":
 					#print('GPS is within bounds: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')	
-		if GeowithinDataset == False:
-			print("Point was not within dataset, must assume offiste")
-			GeoHaltMotors = True
+		if geoWithinDataset == False:
+			print("Point was not within dataset, must assume offsite")
+			geoHaltMotors = True
 
-		haltMotors = haltMotors or GeoHaltMotors
-		GeoStatusText = "OK"
-		if GeoWarning:
-			GeoStatusText = "WARN"
-		if GeoHaltMotors:
-			GeoStatusText = "STOP"
-		statusToSend = {"geofenceStatus": GeoStatusText}
+		geoStatusText = "OK"
+		if geoWarning:
+			geoStatusText = "WARN"
+		if geoHaltMotors:
+			geoStatusText = "STOP"
+		statusToSend = {"geofenceStatus": geoStatusText}
 		await sio.emit('geofenceStatus', statusToSend)
 	else:
 		print("Error in checksum for GPS data: %s" % (data))
@@ -687,7 +695,7 @@ async def handleBump(bumpString):
 
 async def handleSteerTelemetry(steerString):
 	global braking
-	global haltMotors
+	global steerHaltMotors
 	global steeringLocal
 	global steerLockoutWarned
 	data,cksum,calc_cksum = nmeaChecksum(steerString)
@@ -716,10 +724,8 @@ async def handleSteerTelemetry(steerString):
 			print("steerCurrentLimiting : ", steerCurrentLimiting)
 			print("data is " + data.encode('unicode_escape').decode('ascii'))
 
-
-
 			if steerLockout != 0:
-				haltMotors = True
+				steerHaltMotors = True
 				print("Steering is locked out!")
 				await sio.emit('warning', {"message": "Roamer has detected a steering fault and has been disabled."})
 				if steerLockoutWarned == False:
@@ -727,7 +733,7 @@ async def handleSteerTelemetry(steerString):
 				steerLockoutWarned = True
 			
 			else:
-				haltMotors = False
+				steerHaltMotors = False
 				steerLockoutWarned = False
 
 			if steerManualBrake > 0 or steerManualBrake > 0:
@@ -824,11 +830,11 @@ async def handle_haltmotoroverride(sid, override):
 		print("Halt Motor BOOL IS NOT OVERRIDDEN")
 
 @sio.on('haltmotorreset')
-async def handle_haltmotoroverride(sid, resetflg):
-	global haltMotors
+async def handle_haltmotorreset(sid, resetflg):
+	global steerHaltMotors
 	print("MOTOR HALT RESET RECEIVED: ", resetflg)
 	if resetflg == True:
-		haltMotors = False
+		steerHaltMotors = False
 		print("Halt Motor BOOL has been reset")
 
 @sio.event
