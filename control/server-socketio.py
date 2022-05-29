@@ -103,7 +103,7 @@ haltMotorsOnGeofenceBreach = True
 haltMotorsOnSteerLockout = True
 
 #distance thresholds for SONAR to halt motors
-frontThreshold = 30
+frontThreshold = 50
 rearThreshold = 30
 sideThreshold = 50
 
