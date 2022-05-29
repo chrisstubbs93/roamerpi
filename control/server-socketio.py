@@ -260,95 +260,97 @@ def sendcmd(steerin,speed):
 	:param steer: -1000...1000	:param speed: -1000...1000	:
 	'''
 	#print("Sendcmd("+str(steerin)+","+str(speed)+")")
+	try:
+		global steerHaltMotors
+		global geoHaltMotors
+		global haltMotorOverride
+		global frontBumped
+		global rearBumped
+		global frontProxBreach
+		global rearProxBreach
+		global leftIndicate
+		global rightIndicate
+		global StopRetryCount
 
-	global steerHaltMotors
-	global geoHaltMotors
-	global haltMotorOverride
-	global frontBumped
-	global rearBumped
-	global frontProxBreach
-	global rearProxBreach
-	global leftIndicate
-	global rightIndicate
-	global StopRetryCount
-
-	if speed > 0:
-		speed = int((numpy.clip(100,-100,speed)/100.0)*maxfwdspeed)
-	else:
-		speed = int((numpy.clip(100,-100,speed)/100.0)*maxrevspeed)
-	#steer = int((numpy.clip(100,-100,steerin)*steerauth*(1+((speedsteercomp-1)*abs(speed)/100)))) #disable diff steering
-	steer = 0 #don't skid steer using the hoverboards
-
-	if haltMotorsOnGeofenceBreach:
-		if geoHaltMotors == True and haltMotorOverride == False: # if the Motors are halted because of Geofencing then set speed to 0 unless it's overridden by the FE
-			speed = 0
-			print("Motors stopped due to geoHaltMotors")
-
-	if haltMotorsOnSteerLockout:
-		if steerHaltMotors == True and haltMotorOverride == False: # if the Motors are halted because of Geofencing then set speed to 0 unless it's overridden by the FE
-			speed = 0
-			print("Motors stopped due to steerHaltMotors")		
-
-	if haltMotorsOnBump:
-		if frontBumped == True and haltMotorOverride == False and speed > 0: # the front bump stop is pushed, set speed to 0 if they're trying to go forward. otherwise let it reverse
-			speed = 0
-			print("Motors stopped due to frontBumped")
-		if rearBumped == True and haltMotorOverride == False and speed < 0: # the rear bump stop is pushed, set speed to 0 if they're trying to go in reverse. otherwise let it go forward
-			speed = 0
-			print("Motors stopped due to rearBumped")
-
-	if haltMotorsOnProxBreach:
-		if frontProxBreach == True and haltMotorOverride == False and speed > 0: # the front bump stop is pushed, set speed to 0 if they're trying to go forward. otherwise let it reverse
-			speed = 0
-			print("Motors stopped due to frontProxBreach")
-		if rearProxBreach == True and haltMotorOverride == False and speed < 0: # the rear bump stop is pushed, set speed to 0 if they're trying to go in reverse. otherwise let it go forward
-			speed = 0
-			print("Motors stopped due to rearProxBreach")
-
-	#calculate packet
-	portbusy = True
-	startB = bytes.fromhex('ABCD')[::-1] # lower byte first
-	steerB = struct.pack('h', steer)
-	speedB = struct.pack('h', speed)
-	brakeB = struct.pack('h', 0) #don't bother with braking in speed mode
-	driveModeB = struct.pack('h', 2) #2=speed, 3=torque
-	crcB = bytes(a^b^c^d^e for (a, b, c, d, e) in zip(startB, steerB, speedB, brakeB, driveModeB))
-
-	#send it
-	if speed == 0:
-		SerialSendRetries = StopRetryCount
-	else:
-		SerialSendRetries = 1
-	for cnt in range(SerialSendRetries):
-		ser.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
-		if fourwd:
-			ser2.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
-		time.sleep(0.07)
-
-
-	#do the arduino steering
-	if Steeringdetected:
-		steerin = steerin * -1 #because it's backwards
-		if steerin < -20:
-			rightIndicate = True
-			leftIndicate = False
-		elif steerin > 20:
-			rightIndicate = False
-			leftIndicate = True
+		if speed > 0:
+			speed = int((numpy.clip(100,-100,speed)/100.0)*maxfwdspeed)
 		else:
-			rightIndicate = False
-			leftIndicate = False		
-		if steerHaltMotors == True and haltMotorOverride == False:
-			steerin = 0 #steer to zero when disabled so it can at least be pushed in a straight line.
-		serSteering.write((str(numpy.clip(100,-100,steerin))+"\n").encode('utf_8')) #old mode
-	portbusy = False
+			speed = int((numpy.clip(100,-100,speed)/100.0)*maxrevspeed)
+		#steer = int((numpy.clip(100,-100,steerin)*steerauth*(1+((speedsteercomp-1)*abs(speed)/100)))) #disable diff steering
+		steer = 0 #don't skid steer using the hoverboards
 
-	global lastSerialSendMs
-	timez = current_milli_time()-lastSerialSendMs
-	#print("ms since last serial: " + str(timez))
-	if timez > 700:
-		print("WARNING TIME SINCE LAST SERIAL SEND: "+ str(timez))
-	lastSerialSendMs = current_milli_time()
+		if haltMotorsOnGeofenceBreach:
+			if geoHaltMotors == True and haltMotorOverride == False: # if the Motors are halted because of Geofencing then set speed to 0 unless it's overridden by the FE
+				speed = 0
+				print("Motors stopped due to geoHaltMotors")
+
+		if haltMotorsOnSteerLockout:
+			if steerHaltMotors == True and haltMotorOverride == False: # if the Motors are halted because of Geofencing then set speed to 0 unless it's overridden by the FE
+				speed = 0
+				print("Motors stopped due to steerHaltMotors")		
+
+		if haltMotorsOnBump:
+			if frontBumped == True and haltMotorOverride == False and speed > 0: # the front bump stop is pushed, set speed to 0 if they're trying to go forward. otherwise let it reverse
+				speed = 0
+				print("Motors stopped due to frontBumped")
+			if rearBumped == True and haltMotorOverride == False and speed < 0: # the rear bump stop is pushed, set speed to 0 if they're trying to go in reverse. otherwise let it go forward
+				speed = 0
+				print("Motors stopped due to rearBumped")
+
+		if haltMotorsOnProxBreach:
+			if frontProxBreach == True and haltMotorOverride == False and speed > 0: # the front bump stop is pushed, set speed to 0 if they're trying to go forward. otherwise let it reverse
+				speed = 0
+				print("Motors stopped due to frontProxBreach")
+			if rearProxBreach == True and haltMotorOverride == False and speed < 0: # the rear bump stop is pushed, set speed to 0 if they're trying to go in reverse. otherwise let it go forward
+				speed = 0
+				print("Motors stopped due to rearProxBreach")
+
+		#calculate packet
+		portbusy = True
+		startB = bytes.fromhex('ABCD')[::-1] # lower byte first
+		steerB = struct.pack('h', steer)
+		speedB = struct.pack('h', speed)
+		brakeB = struct.pack('h', 0) #don't bother with braking in speed mode
+		driveModeB = struct.pack('h', 2) #2=speed, 3=torque
+		crcB = bytes(a^b^c^d^e for (a, b, c, d, e) in zip(startB, steerB, speedB, brakeB, driveModeB))
+
+		#send it
+		if speed == 0:
+			SerialSendRetries = StopRetryCount
+		else:
+			SerialSendRetries = 1
+		for cnt in range(SerialSendRetries):
+			ser.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
+			if fourwd:
+				ser2.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
+			time.sleep(0.07)
+
+
+		#do the arduino steering
+		if Steeringdetected:
+			steerin = steerin * -1 #because it's backwards
+			if steerin < -20:
+				rightIndicate = True
+				leftIndicate = False
+			elif steerin > 20:
+				rightIndicate = False
+				leftIndicate = True
+			else:
+				rightIndicate = False
+				leftIndicate = False		
+			if steerHaltMotors == True and haltMotorOverride == False:
+				steerin = 0 #steer to zero when disabled so it can at least be pushed in a straight line.
+			serSteering.write((str(numpy.clip(100,-100,steerin))+"\n").encode('utf_8')) #old mode
+		portbusy = False
+
+		global lastSerialSendMs
+		timez = current_milli_time()-lastSerialSendMs
+		#print("ms since last serial: " + str(timez))
+		if timez > 700:
+			print("WARNING TIME SINCE LAST SERIAL SEND: "+ str(timez))
+		lastSerialSendMs = current_milli_time()
+	except Exception as e:
+		print('EXCEPTION RAISED: {}'.format(e))
 
 
 def SendAndResetTimeout(steer,speed):
@@ -384,134 +386,146 @@ def main():
 
 ###create asyncio background tasks here###
 async def telemetry():
-	global hover1LastTime
-	global hover2LastTime
-	global hover1BatteryWarned
-	global hover2BatteryWarned
-	global hover1TelemetryWarned
-	global hover2TelemetryWarned
-	while True:
-		await asyncio.sleep(1)
-		
-		if portbusy == False:
-			feedback = ser.read_all()
-			if feedback:
-				if feedback[0] == 205 and feedback[1] == 171: #check start byte
-					cmd1, cmd2, speedR_meas, speedL_meas, batVoltage, boardTemp, cmdLed = struct.unpack('<hhhhhhH', feedback[2:16])
-					#print(f'cmd1: {cmd1}, cmd2: {cmd2}, speedR_meas: {speedR_meas}, speedL_meas: {speedL_meas}, batVoltage: {batVoltage}, boardTemp: {boardTemp}, cmdLed: {cmdLed}')	
-					await sio.emit('telemetry', {"cmd1": cmd1, "cmd2": cmd2, "speedR_meas": speedR_meas, "speedL_meas": speedL_meas, "batVoltage": batVoltage/100, "boardTemp": boardTemp/10, "cmdLed": cmdLed})
-					hover1LastTime = current_milli_time()
-					if batVoltage < batteryWarningThreshold and hover1BatteryWarned == False:
-						adminEmail("HOVER #1 BATTERY LOW", "Hoverboard #1 Battery Voltage is low. Voltage: " + str(batVoltage))
-						hover1BatteryWarned = True
-					if batVoltage > batteryWarningThreshold and hover1BatteryWarned == True:
-						hover1BatteryWarned = False
-						adminEmail("HOVER #1 battery restored", "Hoverboard #1 Battery Voltage is normal. Voltage: " + str(batVoltage))
-			if fourwd == True:
-				feedback2 = ser2.read_all()
-				if feedback2:
-					if feedback2[0] == 205 and feedback2[1] == 171: #check start byte
-						cmd1, cmd2, speedR_meas, speedL_meas, batVoltage, boardTemp, cmdLed = struct.unpack('<hhhhhhH', feedback2[2:16])
-						await sio.emit('telemetry2', {"cmd1": cmd1, "cmd2": cmd2, "speedR_meas": speedR_meas, "speedL_meas": speedL_meas, "batVoltage": batVoltage/100, "boardTemp": boardTemp/10, "cmdLed": cmdLed})
-						hover2LastTime = current_milli_time()
-						if batVoltage < batteryWarningThreshold and hover2BatteryWarned == False:
-							adminEmail("HOVER #2 BATTERY LOW", "Hoverboard #2 Battery Voltage is low. Voltage: " + str(batVoltage))
-							hover2BatteryWarned = True
-						if batVoltage > batteryWarningThreshold and hover2BatteryWarned == True:
-							hover2BatteryWarned = False
-							adminEmail("HOVER #2 battery restored", "Hoverboard #2 Battery Voltage is normal. Voltage: " + str(batVoltage))
+	try:
+		global hover1LastTime
+		global hover2LastTime
+		global hover1BatteryWarned
+		global hover2BatteryWarned
+		global hover1TelemetryWarned
+		global hover2TelemetryWarned
+		while True:
+			await asyncio.sleep(1)
+			
+			if portbusy == False:
+				feedback = ser.read_all()
+				if feedback:
+					if feedback[0] == 205 and feedback[1] == 171: #check start byte
+						cmd1, cmd2, speedR_meas, speedL_meas, batVoltage, boardTemp, cmdLed = struct.unpack('<hhhhhhH', feedback[2:16])
+						#print(f'cmd1: {cmd1}, cmd2: {cmd2}, speedR_meas: {speedR_meas}, speedL_meas: {speedL_meas}, batVoltage: {batVoltage}, boardTemp: {boardTemp}, cmdLed: {cmdLed}')	
+						await sio.emit('telemetry', {"cmd1": cmd1, "cmd2": cmd2, "speedR_meas": speedR_meas, "speedL_meas": speedL_meas, "batVoltage": batVoltage/100, "boardTemp": boardTemp/10, "cmdLed": cmdLed})
+						hover1LastTime = current_milli_time()
+						if batVoltage < batteryWarningThreshold and hover1BatteryWarned == False:
+							adminEmail("HOVER #1 BATTERY LOW", "Hoverboard #1 Battery Voltage is low. Voltage: " + str(batVoltage))
+							hover1BatteryWarned = True
+						if batVoltage > batteryWarningThreshold and hover1BatteryWarned == True:
+							hover1BatteryWarned = False
+							adminEmail("HOVER #1 battery restored", "Hoverboard #1 Battery Voltage is normal. Voltage: " + str(batVoltage))
+				if fourwd == True:
+					feedback2 = ser2.read_all()
+					if feedback2:
+						if feedback2[0] == 205 and feedback2[1] == 171: #check start byte
+							cmd1, cmd2, speedR_meas, speedL_meas, batVoltage, boardTemp, cmdLed = struct.unpack('<hhhhhhH', feedback2[2:16])
+							await sio.emit('telemetry2', {"cmd1": cmd1, "cmd2": cmd2, "speedR_meas": speedR_meas, "speedL_meas": speedL_meas, "batVoltage": batVoltage/100, "boardTemp": boardTemp/10, "cmdLed": cmdLed})
+							hover2LastTime = current_milli_time()
+							if batVoltage < batteryWarningThreshold and hover2BatteryWarned == False:
+								adminEmail("HOVER #2 BATTERY LOW", "Hoverboard #2 Battery Voltage is low. Voltage: " + str(batVoltage))
+								hover2BatteryWarned = True
+							if batVoltage > batteryWarningThreshold and hover2BatteryWarned == True:
+								hover2BatteryWarned = False
+								adminEmail("HOVER #2 battery restored", "Hoverboard #2 Battery Voltage is normal. Voltage: " + str(batVoltage))
 
-		if (current_milli_time()>=hover1LastTime+(telemetryWarningTimeout * 1000)) and hover1TelemetryWarned == False:			
-			adminEmail("HOVER #1 TELEMETRY TIMEOUT", "Hoverboard #1 TELEMETRY TIMEOUT. No telemetry has been received for this many seconds: " + str(telemetryWarningTimeout))
-			hover1TelemetryWarned = True
-		elif (current_milli_time()<hover1LastTime+(telemetryWarningTimeout * 1000)) and hover1TelemetryWarned == True:
-			hover1TelemetryWarned = False
-			adminEmail("HOVER #1 Telemetry Restored", "Hoverboard #1 Telemetry Restored.")
-		
-		if (current_milli_time()>=hover2LastTime+(telemetryWarningTimeout * 1000)) and hover2TelemetryWarned == False:			
-			adminEmail("HOVER #2 TELEMETRY TIMEOUT", "Hoverboard #2 TELEMETRY TIMEOUT. No telemetry has been received for this many seconds: " + str(telemetryWarningTimeout))
-			hover2TelemetryWarned = True
-		elif (current_milli_time()<hover2LastTime+(telemetryWarningTimeout * 1000)) and hover2TelemetryWarned == True:
-			hover2TelemetryWarned = False
-			adminEmail("HOVER #2 Telemetry Restored", "Hoverboard #2 Telemetry Restored.")
+			if (current_milli_time()>=hover1LastTime+(telemetryWarningTimeout * 1000)) and hover1TelemetryWarned == False:			
+				adminEmail("HOVER #1 TELEMETRY TIMEOUT", "Hoverboard #1 TELEMETRY TIMEOUT. No telemetry has been received for this many seconds: " + str(telemetryWarningTimeout))
+				hover1TelemetryWarned = True
+			elif (current_milli_time()<hover1LastTime+(telemetryWarningTimeout * 1000)) and hover1TelemetryWarned == True:
+				hover1TelemetryWarned = False
+				adminEmail("HOVER #1 Telemetry Restored", "Hoverboard #1 Telemetry Restored.")
+			
+			if (current_milli_time()>=hover2LastTime+(telemetryWarningTimeout * 1000)) and hover2TelemetryWarned == False:			
+				adminEmail("HOVER #2 TELEMETRY TIMEOUT", "Hoverboard #2 TELEMETRY TIMEOUT. No telemetry has been received for this many seconds: " + str(telemetryWarningTimeout))
+				hover2TelemetryWarned = True
+			elif (current_milli_time()<hover2LastTime+(telemetryWarningTimeout * 1000)) and hover2TelemetryWarned == True:
+				hover2TelemetryWarned = False
+				adminEmail("HOVER #2 Telemetry Restored", "Hoverboard #2 Telemetry Restored.")
+	except Exception as e:
+		print('EXCEPTION RAISED: {}'.format(e))
 		
 
 async def bodyControl():
-	while True:
-		await asyncio.sleep(0.2)
-		if NavsparkDetected:
-			while serNavspark.inWaiting():
-				rawNavSparkData = serNavspark.readline()
-				bodyControlData = (str(rawNavSparkData).replace("b'", "").replace("\\r\\n", "").replace("$", ""))[:-1]
+	try:
+		while True:
+			await asyncio.sleep(0.2)
+			if NavsparkDetected:
+				while serNavspark.inWaiting():
+					rawNavSparkData = serNavspark.readline()
+					bodyControlData = (str(rawNavSparkData).replace("b'", "").replace("\\r\\n", "").replace("$", ""))[:-1]
 
-				if "SONAR" in bodyControlData: # SONAR data			
-					await handleSonar(bodyControlData)
+					if "SONAR" in bodyControlData: # SONAR data			
+						await handleSonar(bodyControlData)
 
-				if "BUMP" in bodyControlData: # Bumpstop data
-					await handleBump(bodyControlData)
+					if "BUMP" in bodyControlData: # Bumpstop data
+						await handleBump(bodyControlData)
 
-				if "BUMP" not in bodyControlData and "SONAR" not in bodyControlData: # neither Bump or SONAR so we'll treat this as GPS data
-					await handleGps(rawNavSparkData.decode('utf-8')) #send raw NMEA to GPS parser
+					if "BUMP" not in bodyControlData and "SONAR" not in bodyControlData: # neither Bump or SONAR so we'll treat this as GPS data
+						await handleGps(rawNavSparkData.decode('utf-8')) #send raw NMEA to GPS parser
+	except Exception as e:
+		print('EXCEPTION RAISED: {}'.format(e))
 
 async def steeringTelemetry():
-	while True:
-		await asyncio.sleep(0.2)
-		if Steeringdetected:
-			while serSteering.inWaiting():
-				rawSteerData = serSteering.readline()
-				#steeringTelemetry = (str(rawSteerData).replace("b'", "").replace("\\r\\n", "").replace("$", ""))[:-1]
-				steeringTelemetry = rawSteerData.decode('utf-8').replace('\x00',"") #sometimes there's nulls in the serial. Can't figure out why. This'll do.
-				if "STEER" in steeringTelemetry: # just in case there's some other stuff in the chuffinch queue
-					await handleSteerTelemetry(steeringTelemetry) 
+	try:
+		while True:
+			await asyncio.sleep(0.2)
+			if Steeringdetected:
+				while serSteering.inWaiting():
+					rawSteerData = serSteering.readline()
+					#steeringTelemetry = (str(rawSteerData).replace("b'", "").replace("\\r\\n", "").replace("$", ""))[:-1]
+					steeringTelemetry = rawSteerData.decode('utf-8').replace('\x00',"") #sometimes there's nulls in the serial. Can't figure out why. This'll do.
+					if "STEER" in steeringTelemetry: # just in case there's some other stuff in the chuffinch queue
+						await handleSteerTelemetry(steeringTelemetry) 
+	except Exception as e:
+		print('EXCEPTION RAISED: {}'.format(e))
 
 async def lightingControl():
-	global leftIndicate
-	global rightIndicate
-	global hazards
-	global headlights
-	global braking
-	global steeringLocal
+	try:
+		global leftIndicate
+		global rightIndicate
+		global hazards
+		global headlights
+		global braking
+		global steeringLocal
 
-	while True: #the loop time is NOT GOOD brian
-		now = datetime.datetime.now()
-		if clientConnected or steeringLocal:
-			for n in reversed(range(0, 9)):
-				if rightIndicate or hazards:
-					pixels[n] = ORANGE		
-					pixels[Right_Rear_Indicate_Start + n] = ORANGE
+		while True: #the loop time is NOT GOOD brian
+			now = datetime.datetime.now()
+			if clientConnected or steeringLocal:
+				for n in reversed(range(0, 9)):
+					if rightIndicate or hazards:
+						pixels[n] = ORANGE		
+						pixels[Right_Rear_Indicate_Start + n] = ORANGE
 
-				if leftIndicate or hazards:
-					pixels[Left_Front_Indicate_End - n] = ORANGE		
-					pixels[Left_Rear_Indicate_End - n] = ORANGE
+					if leftIndicate or hazards:
+						pixels[Left_Front_Indicate_End - n] = ORANGE		
+						pixels[Left_Rear_Indicate_End - n] = ORANGE
 
-				pixels.show()
-				await asyncio.sleep(0.05)
-			await asyncio.sleep(0.5)
+					pixels.show()
+					await asyncio.sleep(0.05)
+				await asyncio.sleep(0.5)
 
-			if headlights:
-				for n in range(0, Left_Front_Indicate_End+1):
-					pixels[n] = WHITE #set front bar to white	
+				if headlights:
+					for n in range(0, Left_Front_Indicate_End+1):
+						pixels[n] = WHITE #set front bar to white	
 
-			if braking:
-				for n in range(Right_Rear_Indicate_Start, Left_Rear_Indicate_End+1):
-					pixels[n] = RED #set rear bar to red
+				if braking:
+					for n in range(Right_Rear_Indicate_Start, Left_Rear_Indicate_End+1):
+						pixels[n] = RED #set rear bar to red
+				else:
+					for n in range(Right_Rear_Indicate_Start, Left_Rear_Indicate_End+1):
+						pixels[n] = DIMRED #set rear bar to red
+
+				if now.hour >= daytimeHourStart and now.hour <= daytimeHourEnd: # it's daytime, dim the underglow.
+					for n in range(Underglow_Start, Underglow_End):
+						pixels[n] = OFF #Underglow off during the day
+				else:
+					for n in range(Underglow_Start, Underglow_End+1):
+						await underglow_rainbow_cycle(0.003)
+
+
 			else:
-				for n in range(Right_Rear_Indicate_Start, Left_Rear_Indicate_End+1):
-					pixels[n] = DIMRED #set rear bar to red
+				await rainbow_cycle(0.003)
+				await asyncio.sleep(0.81)
 
-			if now.hour >= daytimeHourStart and now.hour <= daytimeHourEnd: # it's daytime, dim the underglow.
-				for n in range(Underglow_Start, Underglow_End):
-					pixels[n] = OFF #Underglow off during the day
-			else:
-				for n in range(Underglow_Start, Underglow_End+1):
-					await underglow_rainbow_cycle(0.003)
-
-
-		else:
-			await rainbow_cycle(0.003)
-			await asyncio.sleep(0.81)
-
-		pixels.show()
+			pixels.show()
+	except Exception as e:
+		print('EXCEPTION RAISED: {}'.format(e))
 
 def wheel(pos):
 	# Input a value 0 to 255 to get a color value.
@@ -551,147 +565,155 @@ async def underglow_rainbow_cycle(wait):
 		await asyncio.sleep(wait)
 
 async def handleGps(nmeaGpsString):	
-	global lastgpstime
-	global geoHaltMotors
-	data,cksum,calc_cksum = nmeaChecksum(nmeaGpsString)
-	if int(cksum,16) == int(calc_cksum,16):
-		for x in nmeaGpsString:
-			my_gps.update(x)
+	try:
+		global lastgpstime
+		global geoHaltMotors
+		data,cksum,calc_cksum = nmeaChecksum(nmeaGpsString)
+		if int(cksum,16) == int(calc_cksum,16):
+			for x in nmeaGpsString:
+				my_gps.update(x)
 
-		#process the NMEA coords to decimal
-		lat = round(my_gps.latitude[0] + (my_gps.latitude[1]/60),8)
-		lng = round(my_gps.longitude[0] + (my_gps.longitude[1]/60),8)
-		if my_gps.longitude[2] == "W":
-			lng = 0 - lng
-		if my_gps.latitude[2] == "S":
-				lat = 0 - lat
+			#process the NMEA coords to decimal
+			lat = round(my_gps.latitude[0] + (my_gps.latitude[1]/60),8)
+			lng = round(my_gps.longitude[0] + (my_gps.longitude[1]/60),8)
+			if my_gps.longitude[2] == "W":
+				lng = 0 - lng
+			if my_gps.latitude[2] == "S":
+					lat = 0 - lat
 
-		timestr = str(my_gps.timestamp[0]).zfill(2) + str(my_gps.timestamp[1]).zfill(2) + str(int(my_gps.timestamp[2])).zfill(2)
-		sats = my_gps.satellites_in_use
-		speed = my_gps.speed[2]*1000/60
-		if my_gps.fix_type == 1:
-			fixtype = "NO"
-		if my_gps.fix_type == 2:
-			fixtype = "2D"
-		if my_gps.fix_type == 3:
-			fixtype = "3D"
-		#print("I can see " + str(my_gps.satellites_in_use) + " satellites. My fix is: " + fixtype + "  My coordinates are: " + str(lat) + "," + str(lng) + " The time is: " + timestr)
-		try:	
-			# post the GPS to the sockets at the highest rate we can		
-			await sio.emit('gpsData', {"lat": lat, "long": lng, "sats": sats, "speed": speed, "heading": my_gps.course, "fixtype": fixtype, "gpstime": timestr})	
-			
-			# only post the GPS data to the DB every 30 seconds, as it doesn't matter as much
-			if (lastgpstime + 30) < time.time():
-				lastgpstime = time.time()
-				print ("Posting GPS to database")
-				geturl = "http://roamer.fun/gps/uploadgps.php?lat="+str(lat)+"&lng="+str(lng)+"&sats="+str(sats)+"&speed="+str(speed)+"&heading="+str(my_gps.course)+"&fixtype="+fixtype+"&gpstime="+timestr
-				print (geturl)
-				ua = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
-				r = requests.get(geturl,headers={"User-Agent": ua})
-				print(r)
-				print("GPS data posted to database")
+			timestr = str(my_gps.timestamp[0]).zfill(2) + str(my_gps.timestamp[1]).zfill(2) + str(int(my_gps.timestamp[2])).zfill(2)
+			sats = my_gps.satellites_in_use
+			speed = my_gps.speed[2]*1000/60
+			if my_gps.fix_type == 1:
+				fixtype = "NO"
+			if my_gps.fix_type == 2:
+				fixtype = "2D"
+			if my_gps.fix_type == 3:
+				fixtype = "3D"
+			#print("I can see " + str(my_gps.satellites_in_use) + " satellites. My fix is: " + fixtype + "  My coordinates are: " + str(lat) + "," + str(lng) + " The time is: " + timestr)
+			try:	
+				# post the GPS to the sockets at the highest rate we can		
+				await sio.emit('gpsData', {"lat": lat, "long": lng, "sats": sats, "speed": speed, "heading": my_gps.course, "fixtype": fixtype, "gpstime": timestr})	
+				
+				# only post the GPS data to the DB every 30 seconds, as it doesn't matter as much
+				if (lastgpstime + 30) < time.time():
+					lastgpstime = time.time()
+					print ("Posting GPS to database")
+					geturl = "http://roamer.fun/gps/uploadgps.php?lat="+str(lat)+"&lng="+str(lng)+"&sats="+str(sats)+"&speed="+str(speed)+"&heading="+str(my_gps.course)+"&fixtype="+fixtype+"&gpstime="+timestr
+					print (geturl)
+					ua = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
+					r = requests.get(geturl,headers={"User-Agent": ua})
+					print(r)
+					print("GPS data posted to database")
 
-		except socket.error as socketerror:
-			print("Error: ", socketerror)
+			except socket.error as socketerror:
+				print("Error: ", socketerror)
 
-		#geofencing
-		point = Point(lng, lat)
-		geoWarning = False
-		geoHaltMotors = False
-		geoWithinDataset = False
-		for feature in js['features']:
-			polygon = shape(feature['geometry'])
-			if polygon.contains(point):
-				geoWithinDataset = True
-				if feature['properties']['type'] == "keepout":
-					print('GPS is within Restricted zone: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will NOT be able to drive regardless of other conditions')
-					geoHaltMotors = True
-				elif feature['properties']['type'] == "warning":
-					print('GPS is in a warning zone: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')
-					geoWarning = True
-				#elif feature['properties']['type'] == "keepin":
-					#print('GPS is within bounds: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')	
-		if geoWithinDataset == False:
-			print("Point was not within dataset, must assume offsite")
-			geoHaltMotors = True
+			#geofencing
+			point = Point(lng, lat)
+			geoWarning = False
+			geoHaltMotors = False
+			geoWithinDataset = False
+			for feature in js['features']:
+				polygon = shape(feature['geometry'])
+				if polygon.contains(point):
+					geoWithinDataset = True
+					if feature['properties']['type'] == "keepout":
+						print('GPS is within Restricted zone: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will NOT be able to drive regardless of other conditions')
+						geoHaltMotors = True
+					elif feature['properties']['type'] == "warning":
+						print('GPS is in a warning zone: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')
+						geoWarning = True
+					#elif feature['properties']['type'] == "keepin":
+						#print('GPS is within bounds: '+str(feature['properties']['level'])+' '+feature['properties']['type']+' named '+feature['properties']['title']+' the user will be able to drive if there are no keepouts')	
+			if geoWithinDataset == False:
+				print("Point was not within dataset, must assume offsite")
+				geoHaltMotors = True
 
-		geoStatusText = "OK"
-		if geoWarning:
-			geoStatusText = "WARN"
-		if geoHaltMotors:
-			geoStatusText = "STOP"
-		statusToSend = {"geofenceStatus": geoStatusText}
-		await sio.emit('geofenceStatus', statusToSend)
-	else:
-		print("Error in checksum for GPS data: %s" % (data))
-		print("Checksum is:" + str(hex(int(cksum,16))) + " expected " + str(hex(int(calc_cksum,16))))
-
+			geoStatusText = "OK"
+			if geoWarning:
+				geoStatusText = "WARN"
+			if geoHaltMotors:
+				geoStatusText = "STOP"
+			statusToSend = {"geofenceStatus": geoStatusText}
+			await sio.emit('geofenceStatus', statusToSend)
+		else:
+			print("Error in checksum for GPS data: %s" % (data))
+			print("Checksum is:" + str(hex(int(cksum,16))) + " expected " + str(hex(int(calc_cksum,16))))
+	except Exception as e:
+		print('EXCEPTION RAISED: {}'.format(e))
 
 async def handleSonar(sonarString):
-	global frontProxBreach
-	global rearProxBreach
-	data,cksum,calc_cksum = nmeaChecksum(sonarString)
-	if cksum == calc_cksum: #how tf does this work
-		sonarSplit = data.replace("SONAR,", "").split(",")
-		sonar_list = []
-		for pair in sonarSplit:
-			angleStr,distanceStr = pair.split(":")
-			angle = int(angleStr)
-			distance = int(distanceStr)
-			if angle == 0 and distance < frontThreshold:
-				frontProxBreach = True
-				await sio.emit('warning', {"message": "Font proximity sensor has been breached. Please reverse."})
-			elif angle == 0 and distance > frontThreshold:
-				frontProxBreach = False
+	try:
+		global frontProxBreach
+		global rearProxBreach
+		data,cksum,calc_cksum = nmeaChecksum(sonarString)
+		if cksum == calc_cksum: #how tf does this work
+			sonarSplit = data.replace("SONAR,", "").split(",")
+			sonar_list = []
+			for pair in sonarSplit:
+				angleStr,distanceStr = pair.split(":")
+				angle = int(angleStr)
+				distance = int(distanceStr)
+				if angle == 0 and distance < frontThreshold:
+					frontProxBreach = True
+					await sio.emit('warning', {"message": "Font proximity sensor has been breached. Please reverse."})
+				elif angle == 0 and distance > frontThreshold:
+					frontProxBreach = False
 
-			if angle == 180 and distance < rearThreshold:
-				rearProxBreach = True
-				await sio.emit('warning', {"message": "Rear proximity sensor has been breached. Please reverse."})
-			elif angle == 180 and distance > rearThreshold:
-				rearProxBreach = False
+				if angle == 180 and distance < rearThreshold:
+					rearProxBreach = True
+					await sio.emit('warning', {"message": "Rear proximity sensor has been breached. Please reverse."})
+				elif angle == 180 and distance > rearThreshold:
+					rearProxBreach = False
 
-			if angle == 90 and distance < sideThreshold:
-				await sio.emit('warning', {"message": "Right proximity sensor warning. Please be careful."})
-			if angle == 270 and distance < sideThreshold:
-				await sio.emit('warning', {"message": "Left proximity sensor warning. Please be careful."})
+				if angle == 90 and distance < sideThreshold:
+					await sio.emit('warning', {"message": "Right proximity sensor warning. Please be careful."})
+				if angle == 270 and distance < sideThreshold:
+					await sio.emit('warning', {"message": "Left proximity sensor warning. Please be careful."})
 
-			sonarToAdd = {"angle": int(angle), "distance": int(distance)}
-			sonar_list.append(sonarToAdd)
+				sonarToAdd = {"angle": int(angle), "distance": int(distance)}
+				sonar_list.append(sonarToAdd)
 
-		if sonar_list:
-			await sio.emit('sonar', sonar_list)
+			if sonar_list:
+				await sio.emit('sonar', sonar_list)
 
-	else:
-		print("Error in checksum for SONAR data: %s" % (data))
-		print("Checksums are %s and %s" % (cksum,calc_cksum))
+		else:
+			print("Error in checksum for SONAR data: %s" % (data))
+			print("Checksums are %s and %s" % (cksum,calc_cksum))
+	except Exception as e:
+		print('EXCEPTION RAISED: {}'.format(e))
 
 async def handleBump(bumpString):
-	global frontBumped
-	global rearBumped
-	data,cksum,calc_cksum = nmeaChecksum(bumpString)
-	if cksum == calc_cksum: #how tf does this work
-		bumpSplit = data.split(",")
-		angle = int(bumpSplit[1])
-		state = int(bumpSplit[2])
-		#bumpToSend = {"angle": angle, "state": state}
+	try:
+		global frontBumped
+		global rearBumped
+		data,cksum,calc_cksum = nmeaChecksum(bumpString)
+		if cksum == calc_cksum: #how tf does this work
+			bumpSplit = data.split(",")
+			angle = int(bumpSplit[1])
+			state = int(bumpSplit[2])
+			#bumpToSend = {"angle": angle, "state": state}
 
-		if angle == 0 and state == 1:
-			frontBumped = True
-			await sio.emit('warning', {"message": "Font bumpswitch has been activated. Please reverse."})
-		elif angle == 0 and state == 0:
-			frontBumped = False
+			if angle == 0 and state == 1:
+				frontBumped = True
+				await sio.emit('warning', {"message": "Font bumpswitch has been activated. Please reverse."})
+			elif angle == 0 and state == 0:
+				frontBumped = False
 
-		if angle == 180 and state == 1:
-			rearBumped = True
-			await sio.emit('warning', {"message": "Rear bumpswitch has been activated. Please move forward."})
-		elif angle == 180 and state == 0:
-			rearBumped = False
+			if angle == 180 and state == 1:
+				rearBumped = True
+				await sio.emit('warning', {"message": "Rear bumpswitch has been activated. Please move forward."})
+			elif angle == 180 and state == 0:
+				rearBumped = False
 
-		#if bumpToSend:
-		#	await sio.emit('bump', bumpToSend)
-	else:
-		print("Error in checksum for BUMP data: %s" % (data))
-		print("Checksums are %s and %s" % (cksum,calc_cksum))
+			#if bumpToSend:
+			#	await sio.emit('bump', bumpToSend)
+		else:
+			print("Error in checksum for BUMP data: %s" % (data))
+			print("Checksums are %s and %s" % (cksum,calc_cksum))
+	except Exception as e:
+		print('EXCEPTION RAISED: {}'.format(e))
 
 async def handleSteerTelemetry(steerString):
 	global braking
