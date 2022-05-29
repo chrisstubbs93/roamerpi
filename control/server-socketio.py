@@ -4,11 +4,12 @@ import urllib.request
 import urllib.parse
 from aiohttp import web
 from aiohttp import ClientSession
+import aiohttp
 import socketio, ssl, asyncio, logging
 import re
 import socket
 from micropyGPS import MicropyGPS
-import requests
+#import requests
 import json
 from shapely.geometry import shape, Point
 import serial.tools.list_ports
@@ -188,20 +189,19 @@ Steeringdetected = False
 #connect to hoverboard
 ser = serial.Serial(PortHoverboard1, 115200, timeout=5)  # open main serial port
 
-def adminEmail(sub, msg):
+async def adminEmail(sub, msg):
 	if enableAdminEmail:
 		try:
 			encodedMsg = urllib.parse.quote(msg, safe='')
 			encodedSub = urllib.parse.quote(sub, safe='')
 
 			geturl = "https://roamer.fun/admin/mail.php?sec=PIPEallNIGHT&sub="+str(encodedSub)+"&msg="+str(encodedMsg)
-			print (geturl)
-			ua = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
-			r = requests.get(geturl,headers={"User-Agent": ua})
-			print(r)
-			print("email sent")
-		except socket.error as socketerror:
-			print("Error: ", socketerror)
+			async with ClientSession() as session:
+				async with session.get(geturl) as response:
+					response = await response.read()			
+					print("Email Sent")
+		except Exception as socketerror:
+			print("Email Send Error: ", socketerror)
 
 # connect to ports (auto-detection)
 try:
@@ -249,9 +249,9 @@ print("PORT DETECTION SUMMARY:")
 print(detectionSummary)
 
 if NavsparkDetected and Steeringdetected and fourwd:
-	adminEmail("Roamer control started", detectionSummary)
+	asyncio.create_task(adminEmail("Roamer control started", detectionSummary))
 else:
-	adminEmail("Serial autodetection issue",detectionSummary)
+	asyncio.create_task(adminEmail("Serial autodetection issue",detectionSummary))
 	print("One or more serial devices not found.")
 	print("====================================================================")
 	print("====================================================================")
@@ -417,11 +417,11 @@ async def telemetry():
 						await sio.emit('telemetry', {"cmd1": cmd1, "cmd2": cmd2, "speedR_meas": speedR_meas, "speedL_meas": speedL_meas, "batVoltage": batVoltage/100, "boardTemp": boardTemp/10, "cmdLed": cmdLed})
 						hover1LastTime = current_milli_time()
 						if batVoltage < batteryWarningThreshold and hover1BatteryWarned == False:
-							adminEmail("HOVER #1 BATTERY LOW", "Hoverboard #1 Battery Voltage is low. Voltage: " + str(batVoltage))
+							asyncio.create_task(adminEmail("HOVER #1 BATTERY LOW", "Hoverboard #1 Battery Voltage is low. Voltage: " + str(batVoltage)))
 							hover1BatteryWarned = True
 						if batVoltage > batteryWarningThreshold and hover1BatteryWarned == True:
 							hover1BatteryWarned = False
-							adminEmail("HOVER #1 battery restored", "Hoverboard #1 Battery Voltage is normal. Voltage: " + str(batVoltage))
+							asyncio.create_task(adminEmail("HOVER #1 battery restored", "Hoverboard #1 Battery Voltage is normal. Voltage: " + str(batVoltage)))
 				if fourwd == True:
 					feedback2 = ser2.read_all()
 					if feedback2:
@@ -430,25 +430,25 @@ async def telemetry():
 							await sio.emit('telemetry2', {"cmd1": cmd1, "cmd2": cmd2, "speedR_meas": speedR_meas, "speedL_meas": speedL_meas, "batVoltage": batVoltage/100, "boardTemp": boardTemp/10, "cmdLed": cmdLed})
 							hover2LastTime = current_milli_time()
 							if batVoltage < batteryWarningThreshold and hover2BatteryWarned == False:
-								adminEmail("HOVER #2 BATTERY LOW", "Hoverboard #2 Battery Voltage is low. Voltage: " + str(batVoltage))
+								asyncio.create_task(adminEmail("HOVER #2 BATTERY LOW", "Hoverboard #2 Battery Voltage is low. Voltage: " + str(batVoltage)))
 								hover2BatteryWarned = True
 							if batVoltage > batteryWarningThreshold and hover2BatteryWarned == True:
 								hover2BatteryWarned = False
-								adminEmail("HOVER #2 battery restored", "Hoverboard #2 Battery Voltage is normal. Voltage: " + str(batVoltage))
+								asyncio.create_task(adminEmail("HOVER #2 battery restored", "Hoverboard #2 Battery Voltage is normal. Voltage: " + str(batVoltage)))
 
 			if (current_milli_time()>=hover1LastTime+(telemetryWarningTimeout * 1000)) and hover1TelemetryWarned == False:			
-				adminEmail("HOVER #1 TELEMETRY TIMEOUT", "Hoverboard #1 TELEMETRY TIMEOUT. No telemetry has been received for this many seconds: " + str(telemetryWarningTimeout))
+				asyncio.create_task(adminEmail("HOVER #1 TELEMETRY TIMEOUT", "Hoverboard #1 TELEMETRY TIMEOUT. No telemetry has been received for this many seconds: " + str(telemetryWarningTimeout)))
 				hover1TelemetryWarned = True
 			elif (current_milli_time()<hover1LastTime+(telemetryWarningTimeout * 1000)) and hover1TelemetryWarned == True:
 				hover1TelemetryWarned = False
-				adminEmail("HOVER #1 Telemetry Restored", "Hoverboard #1 Telemetry Restored.")
+				asyncio.create_task(adminEmail("HOVER #1 Telemetry Restored", "Hoverboard #1 Telemetry Restored."))
 			
 			if (current_milli_time()>=hover2LastTime+(telemetryWarningTimeout * 1000)) and hover2TelemetryWarned == False:			
-				adminEmail("HOVER #2 TELEMETRY TIMEOUT", "Hoverboard #2 TELEMETRY TIMEOUT. No telemetry has been received for this many seconds: " + str(telemetryWarningTimeout))
+				asyncio.create_task(adminEmail("HOVER #2 TELEMETRY TIMEOUT", "Hoverboard #2 TELEMETRY TIMEOUT. No telemetry has been received for this many seconds: " + str(telemetryWarningTimeout)))
 				hover2TelemetryWarned = True
 			elif (current_milli_time()<hover2LastTime+(telemetryWarningTimeout * 1000)) and hover2TelemetryWarned == True:
 				hover2TelemetryWarned = False
-				adminEmail("HOVER #2 Telemetry Restored", "Hoverboard #2 Telemetry Restored.")
+				asyncio.create_task(adminEmail("HOVER #2 Telemetry Restored", "Hoverboard #2 Telemetry Restored."))
 	except Exception as e:
 		print('TELEMETRY THREAD: EXCEPTION RAISED: {}'.format(e))
 		
@@ -686,14 +686,9 @@ async def handleGps(nmeaGpsString):
 async def postGpsData(lat, lng, sats, speed, fixtype, timestr, my_gpsobj):
 	print ("Posting GPS to database")
 	geturl = "http://roamer.fun/gps/uploadgps.php?lat="+str(lat)+"&lng="+str(lng)+"&sats="+str(sats)+"&speed="+str(speed)+"&heading="+str(my_gpsobj.course)+"&fixtype="+fixtype+"&gpstime="+timestr
-	#print (geturl)
-	#ua = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
-	#r = requests.get(geturl,headers={"User-Agent": ua})
-	#print(r)	
 	async with ClientSession() as session:
 		async with session.get(geturl) as response:
-			response = await response.read()
-			print(response)
+			response = await response.read()			
 			print("GPS data posted to database")
 
 async def handleSonar(sonarString):
@@ -804,7 +799,7 @@ async def handleSteerTelemetry(steerString):
 				print("Steering is locked out!")
 				await sio.emit('warning', {"message": "Roamer has detected a steering fault and has been disabled."})
 				if steerLockoutWarned == False:
-					adminEmail("Steering Locked Out", "The steering has been locked out")
+					asyncio.create_task(adminEmail("Steering Locked Out", "The steering has been locked out"))
 				steerLockoutWarned = True
 			
 			else:
@@ -926,14 +921,14 @@ async def disconnect(sid):
 	print("motors stop")
 	stp()
 
-def uploadTelemetry():
-	try:
-		geturl = "http://roamer.fun/telemetry/uploadtelemetry.php?iSpeedL="+str(iSpeedL)+"&iSpeedR="+str(iSpeedR)+"&iTemp="+str(iTemp)+"&iVolt="+str(iVolt)+"&iAmpL="+str(iAmpL)+"&iAmpR="+str(iAmpR)
-		r = urllib.request.Request(geturl)
-		with urllib.request.urlopen(r) as response:
-			the_page = response.read()
-	except urllib.error.URLError as e:
-		print(e.reason)  
+# def uploadTelemetry():
+# 	try:
+# 		geturl = "http://roamer.fun/telemetry/uploadtelemetry.php?iSpeedL="+str(iSpeedL)+"&iSpeedR="+str(iSpeedR)+"&iTemp="+str(iTemp)+"&iVolt="+str(iVolt)+"&iAmpL="+str(iAmpL)+"&iAmpR="+str(iAmpR)
+# 		r = urllib.request.Request(geturl)
+# 		with urllib.request.urlopen(r) as response:
+# 			the_page = response.read()
+# 	except urllib.error.URLError as e:
+# 		print(e.reason)  
 
 if __name__ == '__main__':
 	main()
