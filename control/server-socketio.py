@@ -266,7 +266,7 @@ def checkHBStartBytes(detx):
 				return True
 			else:
 				return False
-			ptr++
+			ptr+=1
 	except:
 		return False
 
