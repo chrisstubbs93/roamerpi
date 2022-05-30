@@ -248,11 +248,20 @@ def serialAutoDetect():
 	except Exception as e:
 			print('AUTODETECT EXCEPTION RAISED: {}'.format(e))
 
+def checkHBStartBytes(detx):
+	try:
+		if detx[0] == 205 and detx[1] == 171:
+			return True
+		else:
+			return False
+	except:
+		return False
+
 def startRearHB():
 	print("About to start rear HB")
 	time.sleep(2)
 	detection = ser.read_all()
-	if detection[0] == 205 and detection[1] == 171:
+	if checkHBStartBytes(detection):
 		#it's already on, do nothing
 		print("Rear HB already on")
 	else:
@@ -262,7 +271,7 @@ def startRearHB():
 			serSteering.write(str(8888).encode('utf_8')) #8888 means power cycle
 			time.sleep(3)
 			detection = ser.read_all()
-			if detection[0] == 205 and detection[1] == 171:
+			if checkHBStartBytes(detection):
 				#it's already on, do nothing
 				print("Rear HB started")
 			else:
@@ -277,7 +286,7 @@ def startFrontHB():
 		print("About to start front HB")
 		time.sleep(2)
 		detection = ser2.read_all()
-		if detection[0] == 205 and detection[1] == 171:
+		if checkHBStartBytes(detection):
 			#it's already on, do nothing
 			print("Front HB already on")
 		else:
@@ -287,7 +296,7 @@ def startFrontHB():
 				serSteering.write(str(9999).encode('utf_8')) #9999 means power cycle
 				time.sleep(3)
 				detection = ser2.read_all()
-				if detection[0] == 205 and detection[1] == 171:
+				if checkHBStartBytes(detection):
 					#it's already on, do nothing
 					print("Front HB started")
 				else:
