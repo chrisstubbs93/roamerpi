@@ -260,6 +260,7 @@ def serialAutoDetect():
 
 def checkHBStartBytes(detx):
 	try:
+		print(''.join(format(x, '02x') for x in detx)[:100])
 		ptr = 0
 		for b in detx:
 			if detx[ptr] == 205 and detx[ptr+1] == 171:
@@ -283,11 +284,10 @@ def startRearHB():
 			print("Starting rear HB")
 			serSteering.write((str(8888)+"\n").encode('utf_8')) #8888 means power cycle rear
 			print("Waiting for startup")
-			time.sleep(10)
+			time.sleep(3)
 			detection = ser.read_all()#clear the buffer?
 			time.sleep(3)
 			detection = ser.read_all()
-			print(''.join(format(x, '02x') for x in detection))
 			if checkHBStartBytes(detection):
 				print("Rear HB started")
 			else:
@@ -311,7 +311,7 @@ def startFrontHB():
 				print("Starting front HB")
 				serSteering.write((str(9999)+"\n").encode('utf_8')) #9999 means power cycle front
 				print("Waiting for startup")
-				time.sleep(10)
+				time.sleep(3)
 				detection = ser.read_all()#clear the buffer?
 				time.sleep(3)
 				detection = ser.read_all()
