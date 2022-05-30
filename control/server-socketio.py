@@ -253,14 +253,14 @@ def serialAutoDetect():
 								print("Steering detected on port: " + port)	
 								break									
 						except Exception as e:
-							print('AUTODETECT EXCEPTION RAISED: {}'.format(e))
+							print('Exception scanning port (possibly expected): {}'.format(e))
 
 	except Exception as e:
 			print('AUTODETECT EXCEPTION RAISED: {}'.format(e))
 
 def checkHBStartBytes(detx):
 	try:
-		print(''.join(format(x, '02x') for x in detx)[:100])
+		#print(''.join(format(x, '02x') for x in detx)[:100])
 		ptr = 0
 		for b in detx:
 			if detx[ptr] == 205 and detx[ptr+1] == 171:
@@ -276,23 +276,21 @@ def startRearHB():
 	detection = ser.read_all()
 	if checkHBStartBytes(detection):
 		#it's already on, do nothing
-		print("Rear HB already on")
+		print(".Rear HB already on")
 	else:
 		if Steeringdetected:
 			#start it
-			print("Starting rear HB")
+			print("..Starting rear HB")
 			serSteering.write((str(8888)+"\n").encode('utf_8')) #8888 means power cycle rear
-			print("Waiting for startup")
-			time.sleep(3)
-			detection = ser.read_all()#clear the buffer?
-			time.sleep(3)
+			detection = ser.read_all()#clear the buffer
+			time.sleep(2)
 			detection = ser.read_all()
 			if checkHBStartBytes(detection):
-				print("Rear HB started")
+				print("...Rear HB started")
 			else:
-				print("Rear HB did not respond")
+				print("...Rear HB did not respond")
 		else:
-			print("No steering, canne start")
+			print("..No steering, canne start")
 	print("Exiting startRearHB")
 
 
@@ -303,31 +301,29 @@ def startFrontHB():
 		detection = ser2.read_all()
 		if checkHBStartBytes(detection):
 			#it's already on, do nothing
-			print("Front HB already on")
+			print(".Front HB already on")
 		else:
 			if Steeringdetected:
 				#start it
-				print("Starting front HB")
+				print("..Starting front HB")
 				serSteering.write((str(9999)+"\n").encode('utf_8')) #9999 means power cycle front
-				print("Waiting for startup")
-				time.sleep(3)
-				detection = ser.read_all()#clear the buffer?
-				time.sleep(3)
+				detection = ser.read_all()#clear the buffer
+				time.sleep(2)
 				detection = ser.read_all()
 				if checkHBStartBytes(detection):
-					print("Front HB started")
+					print("...Front HB started")
 				else:
-					print("Front HB did not respond")
+					print("...Front HB did not respond")
 			else:
-				print("No steering, canne start")
+				print("..No steering, canne start")
 	else:
 		#no port, start it and hope for the best
-		print("We don't know the port, but about to try starting front HB")
+		print(".We don't know the port, but about to try starting front HB")
 		if Steeringdetected:
-			print("Starting front HB and hoping for the best")
+			print("..Starting front HB and hoping for the best")
 			serSteering.write((str(9999)+"\n").encode('utf_8')) #9999 means power cycle front
 		else:
-			print("No steering, canne start")
+			print("..No steering, canne start")
 	print("Exiting startFrontHB")
 
 
@@ -344,7 +340,8 @@ if Steeringdetected:
 else:
 	print("No steering. Can't autostart anything. Good luck!")
 
-serialAutoDetect() #try again now we've maybe powered things on
+if !fourwd:
+	serialAutoDetect() #try again now we've maybe powered things on
 
 detectionSummary = "NavSpark detected: " + str(NavsparkDetected) + "\nSteering detected: " + str(Steeringdetected) + "\nHoverboard #2 detected: " + str(fourwd) + "\n"
 print("PORT DETECTION SUMMARY:")
