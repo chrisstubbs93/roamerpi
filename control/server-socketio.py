@@ -182,13 +182,6 @@ Front_Headlight_End = 35
 with open('geo.json') as f:
 	js = json.load(f)
 
-#default the port states to false:
-fourwd = False
-NavsparkDetected = False
-Steeringdetected = False
-#connect to hoverboard
-ser = serial.Serial(PortHoverboard1, 115200, timeout=5)  # open main serial port
-
 async def adminEmail(sub, msg):
 	if enableAdminEmail:
 		try:
@@ -203,46 +196,126 @@ async def adminEmail(sub, msg):
 		except Exception as socketerror:
 			print("Email Send Error: ", socketerror)
 
-# connect to ports (auto-detection)
-try:
-	ports = serial.tools.list_ports.comports()
-	print("Begin Serial Autodetection")
-	serialAttempt = None
-	for port, desc, hwid in sorted(ports):
-			if "USB" in port:
-				print("{}: {} [{}]".format(port, desc, hwid))				
-				attempts = 0			
-				while attempts < 3:
-					try:
-						attempts += 1	
-						if serialAttempt is not None and attempts > 1 and (NavsparkDetected == False or Steeringdetected == False or fourwd == False):
-							serialAttempt.reset_input_buffer()
-							serialAttempt.close()
-							print("Closed Port for next port: " + str(port))							
-						serialAttempt = serial.Serial(port, 115200, timeout=5)
-						time.sleep(2)
-						print("Attempt " + str(attempts) + " on " + port)
-						detection = serialAttempt.read_all()
-						if detection[0] == 205 and detection[1] == 171 and fourwd == False:
-							fourwd = True
-							ser2 = serialAttempt
-							print("4WD Mode - 2nd Hoverboard detected on port:" + port)		
-							break		
-						elif "$GPGGA" in str(detection.decode('utf-8')) and NavsparkDetected == False:
-							NavsparkDetected = True
-							serNavspark = serialAttempt
-							print("NavSpark detected on port:" + port)	
-							break
-						elif "$STEER" in str(detection.decode('utf-8').replace('\x00',"")) and Steeringdetected == False:
-							Steeringdetected = True
-							serSteering = serialAttempt
-							print("Steering detected on port: " + port)	
-							break									
-					except Exception as e:
-						print('AUTODETECT EXCEPTION RAISED: {}'.format(e))
+#default the port states to false:
+fourwd = False
+NavsparkDetected = False
+Steeringdetected = False
+#connect to hoverboard
+ser = serial.Serial(PortHoverboard1, 115200, timeout=5)  # open main back serial port
 
-except Exception as e:
-		print('AUTODETECT EXCEPTION RAISED: {}'.format(e))
+def serialAutoDetect():
+	# connect to ports (auto-detection)
+	try:
+		ports = serial.tools.list_ports.comports()
+		print("Begin Serial Autodetection")
+		serialAttempt = None
+		for port, desc, hwid in sorted(ports):
+				if "USB" in port:
+					print("{}: {} [{}]".format(port, desc, hwid))				
+					attempts = 0			
+					while attempts < 3:
+						try:
+							attempts += 1	
+							if serialAttempt is not None and attempts > 1 and (NavsparkDetected == False or Steeringdetected == False or fourwd == False):
+								serialAttempt.reset_input_buffer()
+								serialAttempt.close()
+								print("Closed Port for next port: " + str(port))							
+							serialAttempt = serial.Serial(port, 115200, timeout=5)
+							time.sleep(2)
+							print("Attempt " + str(attempts) + " on " + port)
+							detection = serialAttempt.read_all()
+							if detection[0] == 205 and detection[1] == 171 and fourwd == False:
+								fourwd = True
+								ser2 = serialAttempt
+								print("4WD Mode - 2nd Hoverboard detected on port:" + port)		
+								break		
+							elif "$GPGGA" in str(detection.decode('utf-8')) and NavsparkDetected == False:
+								NavsparkDetected = True
+								serNavspark = serialAttempt
+								print("NavSpark detected on port:" + port)	
+								break
+							elif "$STEER" in str(detection.decode('utf-8').replace('\x00',"")) and Steeringdetected == False:
+								Steeringdetected = True
+								serSteering = serialAttempt
+								print("Steering detected on port: " + port)	
+								break									
+						except Exception as e:
+							print('AUTODETECT EXCEPTION RAISED: {}'.format(e))
+
+	except Exception as e:
+			print('AUTODETECT EXCEPTION RAISED: {}'.format(e))
+
+def startRearHB():
+	print("About to start rear HB")
+	time.sleep(2)
+	detection = ser.read_all()
+	if detection[0] == 205 and detection[1] == 171:
+		#it's already on, do nothing
+		print("Rear HB already on")
+	else:
+		if Steeringdetected:
+			#start it
+			print("Starting rear HB")
+			serSteering.write(str(8888).encode('utf_8')) #8888 means power cycle
+			time.sleep(3)
+			detection = ser.read_all()
+			if detection[0] == 205 and detection[1] == 171:
+				#it's already on, do nothing
+				print("Rear HB started")
+			else:
+				print("Rear HB did not respond")
+		else:
+			print("No steering, canne start")
+	print("Exiting startRearHB")
+
+
+def startFrontHB():
+	if fourwd:
+		print("About to start front HB")
+		time.sleep(2)
+		detection = ser2.read_all()
+		if detection[0] == 205 and detection[1] == 171:
+			#it's already on, do nothing
+			print("Front HB already on")
+		else:
+			if Steeringdetected:
+				#start it
+				print("Starting front HB")
+				serSteering.write(str(9999).encode('utf_8')) #9999 means power cycle
+				time.sleep(3)
+				detection = ser2.read_all()
+				if detection[0] == 205 and detection[1] == 171:
+					#it's already on, do nothing
+					print("Front HB started")
+				else:
+					print("Front HB did not respond")
+			else:
+				print("No steering, canne start")
+	else:
+		#no port, start it and hope for the best
+		print("We don't know the port, but about to try starting front HB")
+		if Steeringdetected:
+			print("Starting front HB and hoping for the best")
+			serSteering.write((str(9999).encode('utf_8')) #9999 means power cycle
+		else:
+			print("No steering, canne start")
+	print("Exiting startFrontHB")
+
+
+serialAutoDetect() #find the navspark and steering and maybe 4wd HB
+detectionSummary = "NavSpark detected: " + str(NavsparkDetected) + "\nSteering detected: " + str(Steeringdetected) + "\nHoverboard #2 detected: " + str(fourwd) + "\n"
+print("PORT DETECTION SUMMARY:")
+print(detectionSummary)
+
+
+if Steeringdetected:
+	print("Attempting to start hoverboards")
+	startRearHB()
+	startFrontHB()
+else:
+	print("No steering. Can't autostart anything. Good luck!")
+
+serialAutoDetect() #try again now we've maybe powered things on
 
 detectionSummary = "NavSpark detected: " + str(NavsparkDetected) + "\nSteering detected: " + str(Steeringdetected) + "\nHoverboard #2 detected: " + str(fourwd) + "\n"
 print("PORT DETECTION SUMMARY:")
