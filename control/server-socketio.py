@@ -41,7 +41,7 @@ daytimeHourStart = 5
 daytimeHourEnd = 20
 
 PortHoverboard1 = '/dev/serial0'
-enableAdminEmail = True
+enableAdminEmail = False
 if enableAdminEmail == False:
 	print("Warning - admin email disabled")
 
