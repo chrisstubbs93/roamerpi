@@ -265,9 +265,8 @@ def checkHBStartBytes(detx):
 		for b in detx:
 			if detx[ptr] == 205 and detx[ptr+1] == 171:
 				return True
-			else:
-				return False
 			ptr+=1
+		return False
 	except:
 		return False
 
