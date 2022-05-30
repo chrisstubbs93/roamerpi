@@ -284,7 +284,7 @@ def startRearHB():
 			detection = ser.read_all()#clear the buffer?
 			time.sleep(3)
 			detection = ser.read_all()
-			print ''.join(format(x, '02x') for x in detection)
+			print(''.join(format(x, '02x') for x in detection))
 			if checkHBStartBytes(detection):
 				print("Rear HB started")
 			else:
