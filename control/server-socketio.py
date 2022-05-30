@@ -212,11 +212,11 @@ def serialAutoDetect():
 	global fourwd
 	global NavsparkDetected
 	global Steeringdetected
-	
+
 	global ser2
 	global serNavspark
 	global serSteering
-	
+
 	# connect to ports (auto-detection)
 	try:
 		ports = serial.tools.list_ports.comports()
@@ -278,7 +278,7 @@ def startRearHB():
 		if Steeringdetected:
 			#start it
 			print("Starting rear HB")
-			serSteering.write(str(8888).encode('utf_8')) #8888 means power cycle
+			serSteering.write((str(8888)+"\n").encode('utf_8')) #8888 means power cycle rear
 			time.sleep(3)
 			detection = ser.read_all()
 			if checkHBStartBytes(detection):
@@ -303,7 +303,7 @@ def startFrontHB():
 			if Steeringdetected:
 				#start it
 				print("Starting front HB")
-				serSteering.write(str(9999).encode('utf_8')) #9999 means power cycle
+				serSteering.write((str(9999)+"\n").encode('utf_8')) #9999 means power cycle front
 				time.sleep(3)
 				detection = ser2.read_all()
 				if checkHBStartBytes(detection):
@@ -318,7 +318,7 @@ def startFrontHB():
 		print("We don't know the port, but about to try starting front HB")
 		if Steeringdetected:
 			print("Starting front HB and hoping for the best")
-			serSteering.write(str(9999).encode('utf_8')) #9999 means power cycle
+			serSteering.write((str(9999)+"\n").encode('utf_8')) #9999 means power cycle front
 		else:
 			print("No steering, canne start")
 	print("Exiting startFrontHB")
