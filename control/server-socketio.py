@@ -340,7 +340,7 @@ if Steeringdetected:
 else:
 	print("No steering. Can't autostart anything. Good luck!")
 
-if !fourwd:
+if not fourwd:
 	serialAutoDetect() #try again now we've maybe powered things on
 
 detectionSummary = "NavSpark detected: " + str(NavsparkDetected) + "\nSteering detected: " + str(Steeringdetected) + "\nHoverboard #2 detected: " + str(fourwd) + "\n"
