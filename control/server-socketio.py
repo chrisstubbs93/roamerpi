@@ -260,10 +260,13 @@ def serialAutoDetect():
 
 def checkHBStartBytes(detx):
 	try:
-		if detx[0] == 205 and detx[1] == 171:
-			return True
-		else:
-			return False
+		ptr = 0
+		for b in detx:
+			if detx[ptr] == 205 and detx[ptr+1] == 171:
+				return True
+			else:
+				return False
+			ptr++
 	except:
 		return False
 
