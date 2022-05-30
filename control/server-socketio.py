@@ -203,10 +203,20 @@ Steeringdetected = False
 #connect to hoverboard
 ser = serial.Serial(PortHoverboard1, 115200, timeout=5)  # open main back serial port
 
+#set up variables for ports
+global ser2
+global serNavspark
+global serSteering
+
 def serialAutoDetect():
 	global fourwd
 	global NavsparkDetected
 	global Steeringdetected
+	
+	global ser2
+	global serNavspark
+	global serSteering
+	
 	# connect to ports (auto-detection)
 	try:
 		ports = serial.tools.list_ports.comports()
