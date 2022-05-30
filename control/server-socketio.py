@@ -296,7 +296,7 @@ def startFrontHB():
 		print("We don't know the port, but about to try starting front HB")
 		if Steeringdetected:
 			print("Starting front HB and hoping for the best")
-			serSteering.write((str(9999).encode('utf_8')) #9999 means power cycle
+			serSteering.write(str(9999).encode('utf_8')) #9999 means power cycle
 		else:
 			print("No steering, canne start")
 	print("Exiting startFrontHB")
