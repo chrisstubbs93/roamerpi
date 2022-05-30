@@ -279,11 +279,12 @@ def startRearHB():
 			#start it
 			print("Starting rear HB")
 			serSteering.write((str(8888)+"\n").encode('utf_8')) #8888 means power cycle rear
+			print("Waiting for startup")
+			time.sleep(10)
 			detection = ser.read_all()#clear the buffer?
-			time.sleep(5)
+			time.sleep(3)
 			detection = ser.read_all()
 			if checkHBStartBytes(detection):
-				#it's already on, do nothing
 				print("Rear HB started")
 			else:
 				print("Rear HB did not respond")
@@ -305,11 +306,12 @@ def startFrontHB():
 				#start it
 				print("Starting front HB")
 				serSteering.write((str(9999)+"\n").encode('utf_8')) #9999 means power cycle front
+				print("Waiting for startup")
+				time.sleep(10)
 				detection = ser.read_all()#clear the buffer?
-				time.sleep(5)
+				time.sleep(3)
 				detection = ser.read_all()
 				if checkHBStartBytes(detection):
-					#it's already on, do nothing
 					print("Front HB started")
 				else:
 					print("Front HB did not respond")
