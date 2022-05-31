@@ -428,12 +428,12 @@ def sendcmd(steerin,speed):
 			SerialSendRetries = 1
 		for cnt in range(SerialSendRetries):
 			if ser.is_open:
-				print("writing rear ", speed)
+				#print("writing rear ", speed)
 				ser.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
 			if fourwd:
-				print("4wd")
+				#print("4wd")
 				if ser2.is_open:
-					print("writing front ", speed)
+					#print("writing front ", speed)
 					ser2.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
 			time.sleep(0.07)
 
@@ -543,6 +543,7 @@ async def telemetry():
 
 			if (current_milli_time()>=hover1LastTime+(telemetryWarningTimeout * 1000)) and hover1TelemetryWarned == False:			
 				asyncio.create_task(adminEmail("HOVER #1 TELEMETRY TIMEOUT", "Hoverboard #1 TELEMETRY TIMEOUT. No telemetry has been received for this many seconds: " + str(telemetryWarningTimeout)))
+				print("Warning no hover1 telemetry")
 				hover1TelemetryWarned = True
 			elif (current_milli_time()<hover1LastTime+(telemetryWarningTimeout * 1000)) and hover1TelemetryWarned == True:
 				hover1TelemetryWarned = False
@@ -550,6 +551,7 @@ async def telemetry():
 			
 			if (current_milli_time()>=hover2LastTime+(telemetryWarningTimeout * 1000)) and hover2TelemetryWarned == False:			
 				asyncio.create_task(adminEmail("HOVER #2 TELEMETRY TIMEOUT", "Hoverboard #2 TELEMETRY TIMEOUT. No telemetry has been received for this many seconds: " + str(telemetryWarningTimeout)))
+				print("Warning no hover2 telemetry")
 				hover2TelemetryWarned = True
 			elif (current_milli_time()<hover2LastTime+(telemetryWarningTimeout * 1000)) and hover2TelemetryWarned == True:
 				hover2TelemetryWarned = False
