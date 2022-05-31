@@ -542,8 +542,8 @@ async def telemetry():
 							if batVoltage > batteryWarningThreshold and hover2BatteryWarned == True:
 								hover2BatteryWarned = False
 								asyncio.create_task(adminEmail("HOVER #2 battery restored", "Hoverboard #2 Battery Voltage is normal. Voltage: " + str(batVoltage) + " Threshold: " + str(batteryWarningThreshold)))
-						print("H2 cmd1 ", cmd1)
-						print("H2 cmd2 ", cmd2)
+							print("H2 cmd1 ", cmd1)
+							print("H2 cmd2 ", cmd2)
 
 			if (current_milli_time()>=hover1LastTime+(telemetryWarningTimeout * 1000)) and hover1TelemetryWarned == False:			
 				asyncio.create_task(adminEmail("HOVER #1 TELEMETRY TIMEOUT", "Hoverboard #1 TELEMETRY TIMEOUT. No telemetry has been received for this many seconds: " + str(telemetryWarningTimeout)))
