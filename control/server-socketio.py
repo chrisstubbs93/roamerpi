@@ -428,11 +428,12 @@ def sendcmd(steerin,speed):
 			SerialSendRetries = 1
 		for cnt in range(SerialSendRetries):
 			if ser.is_open:
+				print("writing rear ", speed)
 				ser.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
 			if fourwd:
 				print("4wd")
 				if ser2.is_open:
-					print("writing")
+					print("writing front ", speed)
 					ser2.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
 			time.sleep(0.07)
 
