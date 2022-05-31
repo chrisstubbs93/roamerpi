@@ -527,7 +527,7 @@ async def telemetry():
 						if batVoltage > batteryWarningThreshold and hover1BatteryWarned == True:
 							hover1BatteryWarned = False
 							asyncio.create_task(adminEmail("HOVER #1 battery restored", "Hoverboard #1 Battery Voltage is normal. Voltage: " + str(batVoltage) + " Threshold: " + str(batteryWarningThreshold)))
-						print("H1 cmd1 ", cmd1)
+						print("H1 vpotl ", batVoltage/100)
 						print("H1 cmd2 ", cmd2)
 				if fourwd == True:
 					feedback2 = ser2.read_all()
@@ -542,7 +542,7 @@ async def telemetry():
 							if batVoltage > batteryWarningThreshold and hover2BatteryWarned == True:
 								hover2BatteryWarned = False
 								asyncio.create_task(adminEmail("HOVER #2 battery restored", "Hoverboard #2 Battery Voltage is normal. Voltage: " + str(batVoltage) + " Threshold: " + str(batteryWarningThreshold)))
-							print("H2 cmd1 ", cmd1)
+							print("H2 volt ", batVoltage/100)
 							print("H2 cmd2 ", cmd2)
 
 			if (current_milli_time()>=hover1LastTime+(telemetryWarningTimeout * 1000)) and hover1TelemetryWarned == False:			
