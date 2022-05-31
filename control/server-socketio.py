@@ -377,6 +377,7 @@ def sendcmd(steerin,speed):
 		global leftIndicate
 		global rightIndicate
 		global StopRetryCount
+		#global ser2
 
 		if speed > 0:
 			speed = int((numpy.clip(100,-100,speed)/100.0)*maxfwdspeed)
@@ -429,7 +430,9 @@ def sendcmd(steerin,speed):
 			if ser.is_open:
 				ser.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
 			if fourwd:
+				print("4wd")
 				if ser2.is_open:
+					print("writing")
 					ser2.write(startB+steerB+speedB+brakeB+driveModeB+crcB)
 			time.sleep(0.07)
 
