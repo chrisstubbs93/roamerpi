@@ -377,7 +377,7 @@ def sendcmd(steerin,speed):
 		global leftIndicate
 		global rightIndicate
 		global StopRetryCount
-		#global ser2
+		global ser2
 
 		if speed > 0:
 			speed = int((numpy.clip(100,-100,speed)/100.0)*maxfwdspeed)
