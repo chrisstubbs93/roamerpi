@@ -829,7 +829,7 @@ async def handleSonar(sonarString):
 
 				if angle == 180 and distance < rearThreshold:
 					rearProxBreach = True
-					await sio.emit('warning', {"message": "Rear proximity sensor has been breached. Please reverse."})
+					await sio.emit('warning', {"message": "Rear proximity sensor has been breached. Please move forward."})
 				elif angle == 180 and distance > rearThreshold:
 					rearProxBreach = False
 
