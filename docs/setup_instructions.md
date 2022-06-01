@@ -192,7 +192,9 @@ git clone https://https://github.com/chrisstubbs93/roamer_livestream.git
 sudo bash roamer_livestream/setup.sh (this may/may not fail and youll need to copy out the commands to run as sudo manually)
 ```
 If required: Edit the file /boot/config.txt.
+
 Set the provided URL on the server in settings.php - $videoUrl.
+
 make the script autostart using desktop:
 ```sh
 sudo nano /etc/xdg/autostart/stream.desktop
@@ -202,6 +204,15 @@ with the contents:
 [Desktop Entry]
 Name=StreamDesktop
 Exec=sudo bash /home/pi/roamer_livestream/start.sh
+```
+
+## yolo the low voltage warning
+```sh
+sudo nano /boot/config.txt
+```
+Add to bottom and reboot:
+```sh
+avoid_warnings=1
 ```
 
 
