@@ -823,7 +823,7 @@ async def handleSonar(sonarString):
 				distance = int(distanceStr)
 				if angle == 0 and distance < frontThreshold:
 					frontProxBreach = True
-					await sio.emit('warning', {"message": "Font proximity sensor has been breached. Please reverse."})
+					await sio.emit('warning', {"message": "Front proximity sensor has been breached. Please reverse."})
 				elif angle == 0 and distance > frontThreshold:
 					frontProxBreach = False
 
