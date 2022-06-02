@@ -2,6 +2,6 @@
 while true
 do
 	cd /home/pi/roamerpi/control
-	python3 server-socketio.py
+	sudo python server-socketio.py
 	sleep 10
 done
