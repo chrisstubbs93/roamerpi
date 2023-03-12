@@ -18,6 +18,8 @@ import board
 import neopixel
 import sys
 import datetime
+import RPi.GPIO as GPIO
+import os,signal
 
 import paho.mqtt.client as mqtt
 from random import randrange, uniform
@@ -25,6 +27,12 @@ import time
 mqttBroker ="127.0.0.1"
 mqttclient = mqtt.Client("speed")
 mqttclient.connect(mqttBroker)
+
+#GPIO for kill switch
+GPIO.setup(4, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) #PIN7 (GPIO4 BCM) for killswitch
+if GPIO.input(4) == GPIO.HIGH:
+	print("KILLSWITCH ON. PROGRAM TERMINATING TO RESTART.")
+	os.kill(os.getpid(), signal.SIGTERM)
 
 
 socket.setdefaulttimeout(10)
@@ -503,6 +511,7 @@ def main():
 	loop = asyncio.get_event_loop()
 	app = loop.run_until_complete(init()) #init sio in the loop
 
+	loop.create_task(watchdog())
 	loop.create_task(telemetry())
 	loop.create_task(timeoutstop()) 
 	loop.create_task(bodyControl())
@@ -513,6 +522,23 @@ def main():
 	web.run_app(app, port=9876, ssl_context=ssl_context, loop=loop) #run sio in the loop
 
 ###create asyncio background tasks here###
+
+async def watchdog():
+	try:
+		while True:
+			await asyncio.sleep(1)
+			if GPIO.input(4) == GPIO.HIGH:
+				print("KILLSWITCH ON. PROGRAM TERMINATING TO RESTART.")
+				try:
+					for n in range(0, Left_Front_Indicate_End+1):
+						pixels[n] = ORANGE#set front bar to orange
+					pixels.show()
+				except Exception as e:
+					print('KILLSWICH LIGHT INDICATION: EXCEPTION RAISED: {}'.format(e))
+				os.kill(os.getpid(), signal.SIGTERM)
+	except Exception as e:
+		print('WATCHDOG THREAD: EXCEPTION RAISED: {}'.format(e))
+
 async def telemetry():
 	try:
 		global hover1LastTime
@@ -526,7 +552,7 @@ async def telemetry():
 			
 			if portbusy == False:
 				feedback = ser.read_all()
-				if feedback:
+				if feedback: ##rear HB
 					if feedback[0] == 205 and feedback[1] == 171: #check start byte
 						cmd1, cmd2, speedR_meas, speedL_meas, batVoltage, dcCurrent, boardTemp, cmdLed = struct.unpack('<hhhhhhhH', feedback[2:18])
 						#print(f'cmd1: {cmd1}, cmd2: {cmd2}, speedR_meas: {speedR_meas}, speedL_meas: {speedL_meas}, batVoltage: {batVoltage}, boardTemp: {boardTemp}, cmdLed: {cmdLed}')	
@@ -548,9 +574,13 @@ async def telemetry():
 							asyncio.create_task(adminEmail("HOVER #1 battery restored", "Hoverboard #1 Battery Voltage is normal. Voltage: " + str(batVoltage) + " Threshold: " + str(batteryWarningThreshold)))
 						#print("H1 vpotl ", batVoltage/100)
 						#print("H1 cmd2 ", cmd2)
+					else: #no start byte
+						ser.reset_input_buffer()
+						print("No start byte. ser buffer flushed.")
+
 				if fourwd == True:
 					feedback2 = ser2.read_all()
-					if feedback2:
+					if feedback2: ##front HB
 						if feedback2[0] == 205 and feedback2[1] == 171: #check start byte
 							cmd1, cmd2, speedR_meas, speedL_meas, batVoltage, dcCurrent, boardTemp, cmdLed = struct.unpack('<hhhhhhhH', feedback2[2:18])
 							await sio.emit('telemetry2', {"cmd1": cmd1, "cmd2": cmd2, "speedR_meas": speedR_meas, "speedL_meas": speedL_meas, "batVoltage": batVoltage/100, "boardTemp": boardTemp/10, "cmdLed": cmdLed})
@@ -571,6 +601,9 @@ async def telemetry():
 								asyncio.create_task(adminEmail("HOVER #2 battery restored", "Hoverboard #2 Battery Voltage is normal. Voltage: " + str(batVoltage) + " Threshold: " + str(batteryWarningThreshold)))
 							#print("H2 volt ", batVoltage/100)
 							#print("H2 cmd2 ", cmd2)
+						else: #no start byte
+							ser2.reset_input_buffer()
+							print("No start byte. ser2 buffer flushed.")
 
 			if (current_milli_time()>=hover1LastTime+(telemetryWarningTimeout * 1000)) and hover1TelemetryWarned == False:			
 				asyncio.create_task(adminEmail("HOVER #1 TELEMETRY TIMEOUT", "Hoverboard #1 TELEMETRY TIMEOUT. No telemetry has been received for this many seconds: " + str(telemetryWarningTimeout)))
