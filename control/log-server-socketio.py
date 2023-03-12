@@ -146,6 +146,9 @@ pixels = neopixel.NeoPixel(
 global braking
 braking = True
 
+global reversing
+reversing = False
+
 global hazards
 hazards = False
 
@@ -447,7 +450,7 @@ def sendcmd(steerin,speed):
 
 
 		#do the arduino steering
-		if Steeringdetected:
+		if Steeringdetected and not steeringLocal:
 			steerin = steerin * -1 #because it's backwards
 			if steerin < -20:
 				rightIndicate = True
@@ -636,6 +639,7 @@ async def lightingControl():
 		global hazards
 		global headlights
 		global braking
+		global reversing
 		global steeringLocal
 		global clientConnected
 
@@ -664,6 +668,10 @@ async def lightingControl():
 				else:
 					for n in range(Right_Rear_Indicate_Start, Left_Rear_Indicate_End+1):
 						pixels[n] = DIMRED #set rear bar to red
+
+				if reversing:
+					for n in range(Left_Rear_Indicate_Start, Left_Rear_Indicate_End+1):
+						pixels[n] = WHITE #set rear reversing indicator to white
 				
 			else:
 				await rainbow_cycle(0.003)
@@ -907,9 +915,13 @@ async def handleBump(bumpString):
 
 async def handleSteerTelemetry(steerString):
 	global braking
+	global reversing
 	global steerHaltMotors
 	global steeringLocal
 	global steerLockoutWarned
+	global rightIndicate
+	global leftIndicate
+
 	data,cksum,calc_cksum = nmeaChecksum(steerString)
 	if int(cksum,16) == int(calc_cksum,16):
 		steerSplit = data.split(",")
@@ -922,7 +934,7 @@ async def handleSteerTelemetry(steerString):
 			steerGear = str(steerSplit[2])
 			steerManualBrake = int(steerSplit[3])
 			steerPedalAvg = int(steerSplit[4])
-			steerSteerSp = steerSplit[5]
+			steerSteerSp = int(steerSplit[5])
 			steerSteerIp = steerSplit[6]
 			steerSteerOp = steerSplit[7]
 			steerCurrentIp = steerSplit[8]
@@ -948,15 +960,31 @@ async def handleSteerTelemetry(steerString):
 				steerHaltMotors = False
 				steerLockoutWarned = False
 
-			if steerManualBrake > 0 or steerManualBrake > 0:
+			if steerManualBrake > 0 or steerSentBrake > 100:
 				braking = True
 			else:
 				braking = False
+
+			if steerGear == "R":
+				reversing = True
+			else:
+				reversing = False
 
 			if steerInput == 0:
 				steeringLocal = True
 			else:
 				steeringLocal = False
+
+			if steeringLocal:
+				if steerSteerSp < -50:
+					rightIndicate = True
+					leftIndicate = False
+				elif steerSteerSp > 50:
+					rightIndicate = False
+					leftIndicate = True
+				else:
+					rightIndicate = False
+					leftIndicate = False	
 
 	else:
 		print("Error in checksum for STEER data: %s" % (data))
